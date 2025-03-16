@@ -8,9 +8,11 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.src/main/java/TesteIgnore.java
 *.iws
 *.iml
 *.ipr
+*.db
 
 ### Eclipse ###
 .apt_generated
@@ -36,7 +38,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-database.db
-
-TesteIgnore.java
