@@ -8,7 +8,7 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
-.src/main/java/TesteIgnore.java
+src/main/java/TesteIgnore.java
 *.iws
 *.iml
 *.ipr
