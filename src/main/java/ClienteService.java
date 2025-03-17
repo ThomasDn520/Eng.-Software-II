@@ -9,11 +9,10 @@ public class ClienteService {
         while (true) {
             System.out.println("\n==== MENU CLIENTE ====");
             System.out.println("1. Cadastrar Cliente");
-            System.out.println("2. Listar Clientes");
+            System.out.println("2. Fazer Login");
             System.out.println("3. Atualizar Cliente");
-            System.out.println("4. Excluir Cliente");
-            System.out.println("5. Voltar ao Menu Principal");
-            System.out.print("Escolha uma opção: ");
+            System.out.println("4. Voltar ao Menu Principal");
+            System.out.print("Escolha uma opção (1-4): ");
             
             int opcao = scanner.nextInt();
             scanner.nextLine(); // Limpar buffer
@@ -23,15 +22,12 @@ public class ClienteService {
                     cadastrarCliente(scanner);
                     break;
                 case 2:
-                    listarClientes();
+                    loginCliente(scanner);
                     break;
                 case 3:
                     atualizarCliente(scanner);
                     break;
                 case 4:
-                    excluirCliente(scanner);
-                    break;
-                case 5:
                     return;
                 default:
                     System.out.println("Opção inválida, tente novamente.");
@@ -64,22 +60,31 @@ public class ClienteService {
         }
     }
 
-    public static void listarClientes() {
-        String sql = "SELECT * FROM clientes";
+    public static void loginCliente(Scanner scanner) {
+        System.out.print("E-mail: ");
+        String email = scanner.nextLine();
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        String sql = "SELECT * FROM clientes WHERE email = ? AND senha = ?";
+
         try (Connection conn = Database.conectar();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            System.out.println("\n==== CLIENTES CADASTRADOS ====");
-            while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("id") +
-                                   ", Nome: " + rs.getString("nome") +
-                                   ", Email: " + rs.getString("email") +
-                                   ", CPF: " + rs.getString("cpf"));
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, senha);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("\n Login bem-sucedido! Bem-vindo, " + rs.getString("nome") + "!");
+                
+            } else {
+                System.out.println("\n E-mail ou senha incorretos. Tente novamente.");
             }
         } catch (SQLException e) {
-            System.out.println("Erro ao listar clientes: " + e.getMessage());
+            System.out.println("Erro ao fazer login: " + e.getMessage());
         }
     }
+
 
     public static void atualizarCliente(Scanner scanner) {
         System.out.print("Informe o ID do cliente: ");
@@ -107,22 +112,6 @@ public class ClienteService {
             System.out.println("Cliente atualizado com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar cliente: " + e.getMessage());
-        }
-    }
-
-    public static void excluirCliente(Scanner scanner) {
-        System.out.print("Informe o ID do cliente a ser excluído: ");
-        int id = scanner.nextInt();
-
-        String sql = "DELETE FROM clientes WHERE id = ?";
-
-        try (Connection conn = Database.conectar();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            System.out.println("Cliente excluído com sucesso!");
-        } catch (SQLException e) {
-            System.out.println("Erro ao excluir cliente: " + e.getMessage());
         }
     }
 }
