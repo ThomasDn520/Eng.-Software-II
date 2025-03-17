@@ -6,6 +6,7 @@ public class Main {
         AdminInterface Interface = new AdminInterface();
 
         AdminDAO.criarTabela();
+        Database.criarTabela();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -26,7 +27,7 @@ public class Main {
                             System.out.println("Ainda não implementado (loja)");
                             break;
                         case 3:
-                            System.out.println("Ainda não implementado (cliente)");
+                            ClienteService.menuCliente();
                             break;
                         case 4:
                             System.out.println("Encerrando o sistema...");
@@ -48,7 +49,7 @@ public class Main {
     }
 
     public static void menu() {
-        System.out.println("\n==== Fazer Login como ====");
+        System.out.println("\n==== Fazer Cadastro/Login como ====");
         System.out.println("1 - Admin");
         System.out.println("2 - Loja");
         System.out.println("3 - Cliente");
