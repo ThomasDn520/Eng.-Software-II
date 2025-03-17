@@ -30,6 +30,8 @@ public abstract class User {
         return email;
     }
 
+    public String getSenha(){return senha;}
+
     public boolean validarSenha(String senhaDigitada) {
         return this.senha.equals(senhaDigitada);
     }

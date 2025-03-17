@@ -3,10 +3,11 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
 
-        AdminInterface Interface = new AdminInterface();
+        AdminInterface InterfaceAdm = new AdminInterface();
+        ClienteInterface InterfaceCliente = new ClienteInterface();
 
         AdminDAO.criarTabela();
-        Database.criarTabela();
+        ClienteDAO.criarTabela();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -21,13 +22,13 @@ public class Main {
 
                     switch (opcao) {
                         case 1:
-                            Interface.loginAdmin();
+                            InterfaceAdm.loginAdmin();
                             break;
                         case 2:
                             System.out.println("Ainda não implementado (loja)");
                             break;
                         case 3:
-                            ClienteService.menuCliente();
+                            InterfaceCliente.loginCadastroCliente();
                             break;
                         case 4:
                             System.out.println("Encerrando o sistema...");

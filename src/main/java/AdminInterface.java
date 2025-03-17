@@ -6,7 +6,7 @@ public class AdminInterface {
         private AdminSystem adminSystem;
 
         public AdminInterface() {
-            this.adminSystem = new AdminSystem();;
+            this.adminSystem = new AdminSystem();
         }
 
         public void menuAdmin(UserAdmin admin) {
@@ -16,6 +16,8 @@ public class AdminInterface {
                 System.out.println("1. Criar novo admin");
                 System.out.println("2. Listar admins");
                 System.out.println("3. Sair");
+                System.out.println("4. Listar clientes");
+                System.out.println("5. Deletar clientes");
                 System.out.print("Escolha uma opção: ");
 
                 if (scanner.hasNextInt()) {
@@ -38,6 +40,12 @@ public class AdminInterface {
                         case 3:
                             continuar = false;
                             System.out.println("Saindo...");
+                            break;
+                        case 4:
+                            adminSystem.listarClientes();
+                            break;
+                        case 5:
+                            adminSystem.removerCliente(scanner);
                             break;
                         default:
                             System.out.println("Opção inválida, tente novamente.");
