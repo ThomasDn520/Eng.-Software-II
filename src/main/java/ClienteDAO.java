@@ -38,6 +38,25 @@ public class ClienteDAO {
         }
     }
 
+    public static boolean validarLogin(String email, String senha) {
+        String sql = "SELECT * FROM clientes WHERE email = ? AND senha = ?";
+
+        try (Connection conn = Database.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, email);
+            pstmt.setString(2, senha);
+            ResultSet rs = pstmt.executeQuery();
+
+            boolean existe = rs.next();
+            rs.close();
+            return existe;
+        } catch (Exception e) {
+            System.out.println("Erro ao validar login: " + e.getMessage());
+        }
+        return false;
+    }
+
     public static UserCliente buscarPorEmail(String email) {
         String sql = "SELECT * FROM clientes WHERE email = ?";
 
@@ -93,7 +112,6 @@ public class ClienteDAO {
             int rowsDeleted = stmt.executeUpdate();
 
             if (rowsDeleted > 0) {
-                System.out.println("Cliente removido com sucesso!");
                 return true;
             } else {
                 System.out.println("Nenhum cliente encontrado com este e-mail.");

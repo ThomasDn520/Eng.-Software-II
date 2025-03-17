@@ -1,7 +1,3 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ClienteInterface {
@@ -13,7 +9,51 @@ public class ClienteInterface {
         this.clienteSystem = new ClienteSystem();
     }
 
-    public static void loginCadastroCliente() {
+    public void menuCliente(UserCliente cliente){
+        boolean continuar = true;
+        while (continuar){
+            System.out.println("\n===== Painel do Cliente =====");
+            System.out.println("Bem vindo, " + cliente.getNome() + "!");
+
+            System.out.println("\n1. Buscar itens");
+            System.out.println("2. Buscar Lojas");
+            System.out.println("3. Atualizar dados");
+            System.out.println("4. Sair do sistema");
+            System.out.print("Escolha uma opção: ");
+
+            if (scanner.hasNextInt()) {
+                int opcao = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (opcao) {
+                    case 1:
+                        System.out.println("Função não implementada!");
+                        break;
+                    case 2:
+                        System.out.println("Função não implementada!");
+                        break;
+                    case 3:
+                        clienteSystem.atualizarCliente(scanner, cliente);
+                        break;
+                    case 4:
+                        continuar = false;
+                        System.out.println("Saindo...");
+                        break;
+                    default:
+                        System.out.println("Opção inválida, tente novamente.");
+                }
+            } else {
+                System.out.println("Entrada inválida! Digite um número.");
+                scanner.next();
+            }
+
+
+        }
+
+    }
+
+
+    public void loginCadastroCliente() {
         while (true) {
             System.out.println("\n==== LOGIN/CADATRO CLIENTE ====");
             System.out.println("1. Cadastrar Cliente");
@@ -23,7 +63,7 @@ public class ClienteInterface {
 
             Scanner scanner = new Scanner(System.in);
             int opcao = scanner.nextInt();
-            scanner.nextLine(); // Limpar buffer
+            scanner.nextLine();
 
             switch (opcao) {
                 case 1:
@@ -36,10 +76,10 @@ public class ClienteInterface {
                     System.out.print("CPF: ");
                     String cpf = scanner.nextLine();
 
-                    ClienteSystem.criarCliente(nome, email, senha, cpf);
+                    clienteSystem.criarCliente(nome, email, senha, cpf);
                     break;
                 case 2:
-                    loginCliente(scanner);
+                    loginCliente();
                     break;
                 case 3:
                     return;
@@ -49,31 +89,26 @@ public class ClienteInterface {
         }
     }
 
-    public static void loginCliente(Scanner scanner) {
+    public void loginCliente() {
+        int tentativas = 0;
+        while(tentativas < 5) {
+            System.out.print("E-mail: ");
+            String email = scanner.nextLine();
+            System.out.print("Senha: ");
+            String senha = scanner.nextLine();
 
-                System.out.print("E-mail: ");
-                String email = scanner.nextLine();
-                System.out.print("Senha: ");
-                String senha = scanner.nextLine();
+            UserCliente cliente = clienteSystem.autenticarCliente(email, senha);
+            if (cliente != null) {
+                menuCliente(cliente);
+                return;
+            } else {
+                System.out.println("ID ou senha incorretos!");
+                tentativas++;
+            }
 
-                String sql = "SELECT * FROM clientes WHERE email = ? AND senha = ?";
-
-                try (Connection conn = Database.connect();
-                     PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, email);
-                    stmt.setString(2, senha);
-                    ResultSet rs = stmt.executeQuery();
-
-                    if (rs.next()) {
-                        System.out.println("\n Login bem-sucedido! Bem-vindo, " + rs.getString("nome") + "!");
-
-                    } else {
-                        System.out.println("\n E-mail ou senha incorretos. Tente novamente.");
-                    }
-                } catch (SQLException e) {
-                    System.out.println("Erro ao fazer login: " + e.getMessage());
-                }
-        }
+        } System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
 
     }
+
+}
 

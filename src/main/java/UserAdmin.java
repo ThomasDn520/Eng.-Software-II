@@ -1,8 +1,8 @@
 
 public class UserAdmin extends User {
 
-    public UserAdmin(String nome, String email, String senha) {
-        super(nome, email, senha);
+    public UserAdmin(int id, String nome, String email, String senha) {
+        super(id, nome, email, senha);
     }
 
 }

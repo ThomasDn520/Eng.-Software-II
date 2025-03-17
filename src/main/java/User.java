@@ -5,17 +5,27 @@ public abstract class User {
     protected String email;
     protected String senha;
 
-    private static int contadorId = 0;
-
-    public User(String nome, String email, String senha) {
-        this.Id = gerarId();
+    public User(int id, String nome, String email, String senha) {
+        this.Id = id;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
     }
 
-    private int gerarId() {
-        return contadorId++;
+    public void setId(int id) {
+        Id = id;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 
     public int getId(){

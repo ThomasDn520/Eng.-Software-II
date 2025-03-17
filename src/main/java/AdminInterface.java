@@ -9,6 +9,11 @@ public class AdminInterface {
             this.adminSystem = new AdminSystem();
         }
 
+    public void criarAdmTeste(){
+        adminSystem.criarAdmin("Admin1", "admin1@email.com", "123");
+        adminSystem.criarAdmin("Admin2", "admin2@email.com", "123");
+    }
+
         public void menuAdmin(UserAdmin admin) {
             boolean continuar = true;
             while (continuar) {

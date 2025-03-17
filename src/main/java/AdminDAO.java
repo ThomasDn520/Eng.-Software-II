@@ -71,6 +71,7 @@ public class AdminDAO {
 
             while (rs.next()) {
                 UserAdmin admin = new UserAdmin(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("senha")
@@ -93,6 +94,7 @@ public class AdminDAO {
 
             if (rs.next()) {
                 return new UserAdmin(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("senha")

@@ -7,19 +7,32 @@ public class ClienteSystem {
         ClienteDAO.cadastrarCliente(nome, email, senha, cpf);
     }
 
+    public UserCliente autenticarCliente(String email, String senha){
+        if (ClienteDAO.validarLogin(email, senha)) {
+            return ClienteDAO.buscarPorEmail(email);
+        }
+        return null;
+    }
 
-    public static void atualizarCliente(Scanner scanner) {
-        System.out.print("Informe o ID do cliente: ");
-        int id = scanner.nextInt();
-        scanner.nextLine();
-        System.out.print("Novo nome: ");
-        String nome = scanner.nextLine();
-        System.out.print("Novo e-mail: ");
-        String email = scanner.nextLine();
+    public static void atualizarCliente(Scanner scanner, UserCliente cliente) {
+        System.out.println("\n===== Atualização de Dados =====");
+        System.out.println("Deixe em branco para manter os dados atuais.");
+
+        System.out.print("Novo nome (" + cliente.getNome() + "): ");
+        String nome = scanner.nextLine().trim();
+        if (nome.isEmpty()) nome = cliente.getNome();
+
+        System.out.print("Novo e-mail (" + cliente.getEmail() + "): ");
+        String email = scanner.nextLine().trim();
+        if (email.isEmpty()) email = cliente.getEmail();
+
         System.out.print("Nova senha: ");
-        String senha = scanner.nextLine();
-        System.out.print("Novo CPF: ");
-        String cpf = scanner.nextLine();
+        String senha = scanner.nextLine().trim();
+        if (senha.isEmpty()) senha = cliente.getSenha();
+
+        System.out.print("Novo CPF (" + cliente.getCpf() + "): ");
+        String cpf = scanner.nextLine().trim();
+        if (cpf.isEmpty()) cpf = cliente.getCpf();
 
         String sql = "UPDATE clientes SET nome = ?, email = ?, senha = ?, cpf = ? WHERE id = ?";
 
@@ -29,11 +42,23 @@ public class ClienteSystem {
             stmt.setString(2, email);
             stmt.setString(3, senha);
             stmt.setString(4, cpf);
-            stmt.setInt(5, id);
-            stmt.executeUpdate();
-            System.out.println("Cliente atualizado com sucesso!");
+            stmt.setInt(5, cliente.getId());
+
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Dados atualizados com sucesso!");
+                // Atualiza o objeto do cliente logado
+                cliente.setNome(nome);
+                cliente.setEmail(email);
+                cliente.setSenha(senha);
+                cliente.setCpf(cpf);
+            } else {
+                System.out.println("Erro ao atualizar os dados.");
+            }
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar cliente: " + e.getMessage());
         }
     }
+
+
 }

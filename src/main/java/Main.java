@@ -8,6 +8,10 @@ public class Main {
 
         AdminDAO.criarTabela();
         ClienteDAO.criarTabela();
+        
+        // InterfaceAdm.criarAdmTeste();
+        // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
+        // Basta rodas uma vez e os adms serão armazenados no bd
 
         Scanner scanner = new Scanner(System.in);
 
