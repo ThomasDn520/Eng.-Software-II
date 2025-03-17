@@ -5,9 +5,11 @@ public class Main {
 
         AdminInterface InterfaceAdm = new AdminInterface();
         ClienteInterface InterfaceCliente = new ClienteInterface();
+        LojaInterface InterfaceLoja = new LojaInterface();
 
         AdminDAO.criarTabela();
         ClienteDAO.criarTabela();
+        LojaDAO.criarTabela();
         
         // InterfaceAdm.criarAdmTeste();
         // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
@@ -29,7 +31,7 @@ public class Main {
                             InterfaceAdm.loginAdmin();
                             break;
                         case 2:
-                            System.out.println("Ainda não implementado (loja)");
+                            InterfaceLoja.loginCadastroLoja();
                             break;
                         case 3:
                             InterfaceCliente.loginCadastroCliente();
