@@ -18,7 +18,7 @@ public class Database {
                      "senha TEXT NOT NULL," +
                      "cpf TEXT UNIQUE NOT NULL);";
 
-        try (Connection conn = conectar(); Statement stmt = conn.createStatement()) {
+        try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         } catch (SQLException e) {
             System.out.println("Erro ao criar tabela: " + e.getMessage());

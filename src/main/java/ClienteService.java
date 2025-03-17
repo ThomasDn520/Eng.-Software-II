@@ -1,11 +1,10 @@
-import models.Cliente;
-import database.Database;
+
 import java.sql.*;
 import java.util.Scanner;
 
 public class ClienteService {
 
-    public static void menuCliente(Scanner scanner) {
+    public static void menuCliente() {
         while (true) {
             System.out.println("\n==== MENU CLIENTE ====");
             System.out.println("1. Cadastrar Cliente");
@@ -13,7 +12,8 @@ public class ClienteService {
             System.out.println("3. Atualizar Cliente");
             System.out.println("4. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção (1-4): ");
-            
+
+            Scanner scanner = new Scanner(System.in);
             int opcao = scanner.nextInt();
             scanner.nextLine(); // Limpar buffer
 
@@ -47,7 +47,7 @@ public class ClienteService {
 
         String sql = "INSERT INTO clientes (nome, email, senha, cpf) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nome);
             stmt.setString(2, email);
@@ -68,7 +68,7 @@ public class ClienteService {
 
         String sql = "SELECT * FROM clientes WHERE email = ? AND senha = ?";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             stmt.setString(2, senha);
@@ -101,7 +101,7 @@ public class ClienteService {
 
         String sql = "UPDATE clientes SET nome = ?, email = ?, senha = ?, cpf = ? WHERE id = ?";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nome);
             stmt.setString(2, email);

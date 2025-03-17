@@ -6,7 +6,7 @@ public class ClienteRepository {
     public static void adicionar(Cliente cliente) {
         String sql = "INSERT INTO clientes (nome, email, senha, cpf) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, cliente.getNome());
@@ -24,7 +24,7 @@ public class ClienteRepository {
     public static Cliente buscarPorEmail(String email) {
         String sql = "SELECT * FROM clientes WHERE email = ?";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, email);
@@ -48,7 +48,7 @@ public class ClienteRepository {
     public static void atualizar(Cliente cliente) {
         String sql = "UPDATE clientes SET nome = ?, senha = ? WHERE email = ?";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, cliente.getNome());
@@ -65,7 +65,7 @@ public class ClienteRepository {
     public static void remover(String email) {
         String sql = "DELETE FROM clientes WHERE email = ?";
 
-        try (Connection conn = Database.conectar();
+        try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, email);
