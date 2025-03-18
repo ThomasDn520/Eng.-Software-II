@@ -21,7 +21,6 @@ public class LojaInterface {
             System.out.println("2. Adicionar Produto");
             System.out.println("3. Atualizar dados");
             System.out.println("4. Sair do sistema");
-            System.out.println("5.Remover Loja");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -42,12 +41,6 @@ public class LojaInterface {
                     case 4:
                         continuar = false;
                         System.out.println("Saindo...");
-                        break;
-
-                    case 5:
-                        System.out.print("Digite o CNPJ da loja a ser removida: ");
-                        String cnpj = scanner.nextLine().trim();
-                        LojaDAO.removerLoja(cnpj);
                         break;
                     default:
                         System.out.println("Opção inválida, tente novamente.");

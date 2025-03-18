@@ -82,18 +82,19 @@ public class ClienteDAO {
     }
 
     public static boolean atualizar(UserCliente cliente) {
-        String sql = "UPDATE clientes SET nome = ?, senha = ? WHERE email = ?";
+        String sql = "UPDATE clientes SET nome = ?, email = ?, senha = ?, cpf = ? WHERE id = ?";
 
         try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, cliente.getNome());
-            stmt.setString(2, cliente.getSenha());
-            stmt.setString(3, cliente.getEmail());
+            stmt.setString(2, cliente.getEmail());
+            stmt.setString(3, cliente.getSenha());
+            stmt.setString(4, cliente.getCpf());
+            stmt.setInt(5, cliente.getId());
             int rowsUpdated = stmt.executeUpdate();
 
             if (rowsUpdated > 0) {
-                System.out.println("Dados do cliente atualizados com sucesso!");
                 return true;
             }
         } catch (SQLException e) {

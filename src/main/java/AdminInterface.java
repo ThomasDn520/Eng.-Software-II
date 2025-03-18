@@ -23,6 +23,8 @@ public class AdminInterface {
                 System.out.println("3. Sair");
                 System.out.println("4. Listar clientes");
                 System.out.println("5. Deletar clientes");
+                System.out.println("6. Listar lojas");
+                System.out.println("7. Deletar Lojas");
                 System.out.print("Escolha uma opção: ");
 
                 if (scanner.hasNextInt()) {
@@ -51,6 +53,12 @@ public class AdminInterface {
                             break;
                         case 5:
                             adminSystem.removerCliente(scanner);
+                            break;
+                        case 6:
+                            adminSystem.listarLojas();
+                            break;
+                        case 7:
+                            adminSystem.removerLoja(scanner);
                             break;
                         default:
                             System.out.println("Opção inválida, tente novamente.");

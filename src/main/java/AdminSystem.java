@@ -4,6 +4,7 @@ import java.util.Scanner;
 public class AdminSystem {
     private static List<UserAdmin> admins;
     private static List<UserCliente> clientes;
+    private static List<UserLoja> lojas;
 
     public static void criarAdmin(String nome, String email, String senha) {
         AdminDAO.cadastrarAdmin(nome, email, senha);
@@ -25,6 +26,15 @@ public class AdminSystem {
         }
     }
 
+    public static void listarLojas() {
+        List<UserLoja> lojas = LojaDAO.litarTodas();
+        System.out.println("\n==== Clientes Registrados ====");
+        for (UserLoja loja : lojas) {
+            System.out.println("ID: " + loja.getId() + " | Nome: " + loja.getNome() + " | Email: " + loja.getEmail()+ " | cnpj: " + loja.getCnpj());
+        }
+
+    }
+
     public static void removerCliente(Scanner scanner) {
         System.out.print("Digite o e-mail do cliente que deseja remover: ");
         String email = scanner.nextLine();
@@ -35,6 +45,19 @@ public class AdminSystem {
             System.out.println("Falha ao remover o cliente. Verifique se o e-mail está correto.");
         }
     }
+
+    public static void removerLoja(Scanner scanner){
+        System.out.print("Digite o CNPJ da loja a ser removida: ");
+        String cnpj = scanner.nextLine().trim();
+        if (LojaDAO.removerLoja(cnpj)){
+            System.out.println("Loja removida com sucesso!");
+        } else {
+            System.out.println("Falha ao remover o cliente. Verifique se o CNPJ está correto.");
+        }
+
+
+    }
+
 
     public UserAdmin autenticarAdmin(int id, String senha) {
         if (AdminDAO.validarLogin(id, senha)) {

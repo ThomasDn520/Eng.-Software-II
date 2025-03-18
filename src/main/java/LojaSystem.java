@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class LojaSystem {
 
     public static void criarLoja(String nome, String email, String senha, String CNPJ){
-
+        LojaDAO.cadastrarLoja(nome, email, senha, CNPJ);
     }
 
     public UserLoja autenticarLoja(String email, String senha){
@@ -16,8 +16,6 @@ public class LojaSystem {
         return null;
     }
 
-
-    //criar atualização da Loja
     public static void atualizarLoja(Scanner scanner, UserLoja loja) {
         System.out.println("\n===== Atualização de Dados =====");
         System.out.println("Deixe em branco para manter os dados atuais.");
@@ -38,29 +36,14 @@ public class LojaSystem {
         String cnpj = scanner.nextLine().trim();
         if (cnpj.isEmpty()) cnpj = loja.getCnpj();
 
-        String sql = "UPDATE clientes SET nome = ?, email = ?, senha = ?, cnpj = ? WHERE id = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nome);
-            stmt.setString(2, email);
-            stmt.setString(3, senha);
-            stmt.setString(4, cnpj);
-            stmt.setInt(5, loja.getId());
-
-            int rowsUpdated = stmt.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("Dados atualizados com sucesso!");
-                // Atualiza o objeto do cliente logado
-                loja.setNome(nome);
-                loja.setEmail(email);
-                loja.setSenha(senha);
-                loja.setCnpj(cnpj);
-            } else {
-                System.out.println("Erro ao atualizar os dados.");
-            }
-        } catch (SQLException e) {
-            System.out.println("Erro ao atualizar cliente: " + e.getMessage());
+        if(LojaDAO.atualizar(loja)){
+            System.out.println("Dados da loja atualizados com sucesso!");
+            loja.setNome(nome);
+            loja.setEmail(email);
+            loja.setSenha(senha);
+            loja.setCnpj(cnpj);
+        } else{
+            System.out.println("Erro ao atualizar dados");
         }
     }
 
