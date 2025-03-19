@@ -1,3 +1,10 @@
+import Admin.AdminDAO;
+import Admin.AdminInterface;
+import Cliente.ClienteDAO;
+import Cliente.ClienteInterface;
+import Loja.LojaDAO;
+import Loja.LojaInterface;
+
 import java.util.Scanner;
 
 public class Main {
@@ -11,7 +18,7 @@ public class Main {
         ClienteDAO.criarTabela();
         LojaDAO.criarTabela();
         
-        // InterfaceAdm.criarAdmTeste();
+        //InterfaceAdm.criarAdmTeste();
         // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
         // Basta rodas uma vez e os adms serão armazenados no bd
 

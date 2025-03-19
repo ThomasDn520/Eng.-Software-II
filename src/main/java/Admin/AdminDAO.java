@@ -1,10 +1,13 @@
+package Admin;
+
+import Database.Database;
+import User.UserAdmin;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
 public class AdminDAO {
 
     public static void criarTabela() {

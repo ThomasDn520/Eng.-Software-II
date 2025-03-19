@@ -1,3 +1,4 @@
+package User;
 
 public abstract class User {
     protected int Id;

@@ -1,3 +1,11 @@
+package Admin;
+
+import Cliente.ClienteDAO;
+import Loja.LojaDAO;
+import User.UserAdmin;
+import User.UserCliente;
+import User.UserLoja;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -28,7 +36,7 @@ public class AdminSystem {
 
     public static void listarLojas() {
         List<UserLoja> lojas = LojaDAO.litarTodas();
-        System.out.println("\n==== Clientes Registrados ====");
+        System.out.println("\n==== Lojas Registrados ====");
         for (UserLoja loja : lojas) {
             System.out.println("ID: " + loja.getId() + " | Nome: " + loja.getNome() + " | Email: " + loja.getEmail()+ " | cnpj: " + loja.getCnpj());
         }

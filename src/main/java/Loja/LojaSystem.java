@@ -1,6 +1,7 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+package Loja;
+
+import User.UserLoja;
+
 import java.util.Scanner;
 
 public class LojaSystem {

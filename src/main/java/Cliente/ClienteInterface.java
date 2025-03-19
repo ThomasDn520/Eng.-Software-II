@@ -1,24 +1,26 @@
+package Cliente;
+
+import User.UserCliente;
+
 import java.util.Scanner;
 
-public class LojaInterface {
+public class ClienteInterface {
 
     private Scanner scanner = new Scanner(System.in);
-    private LojaSystem LojaSystem;
+    private ClienteSystem clienteSystem;
 
-    public LojaInterface() {
-
-        this.LojaSystem = new LojaSystem();
+    public ClienteInterface() {
+        this.clienteSystem = new ClienteSystem();
     }
 
-
-    public void menuLoja(UserLoja loja){
+    public void menuCliente(UserCliente cliente){
         boolean continuar = true;
         while (continuar){
-            System.out.println("\n===== Painel da Loja =====");
-            System.out.println("Bem vindo, " + loja.getNome() + "!");
+            System.out.println("\n===== Painel do Cliente =====");
+            System.out.println("Bem vindo, " + cliente.getNome() + "!");
 
-            System.out.println("\n1.Informações Loja");
-            System.out.println("2. Adicionar Produto");
+            System.out.println("\n1. Buscar itens");
+            System.out.println("2. Buscar Lojas");
             System.out.println("3. Atualizar dados");
             System.out.println("4. Sair do sistema");
             System.out.print("Escolha uma opção: ");
@@ -28,7 +30,6 @@ public class LojaInterface {
                 scanner.nextLine();
 
                 switch (opcao) {
-
                     case 1:
                         System.out.println("Função não implementada!");
                         break;
@@ -36,7 +37,7 @@ public class LojaInterface {
                         System.out.println("Função não implementada!");
                         break;
                     case 3:
-                        LojaSystem.atualizarLoja(scanner, loja);
+                        clienteSystem.atualizarCliente(scanner, cliente);
                         break;
                     case 4:
                         continuar = false;
@@ -56,10 +57,10 @@ public class LojaInterface {
     }
 
 
-    public void loginCadastroLoja() {
+    public void loginCadastroCliente() {
         while (true) {
-            System.out.println("\n==== LOGIN/CADATRO Loja ====");
-            System.out.println("1. Cadastrar Loja");
+            System.out.println("\n==== LOGIN/CADATRO CLIENTE ====");
+            System.out.println("1. Cadastrar Cliente");
             System.out.println("2. Fazer Login");
             System.out.println("3. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção (1-4): ");
@@ -76,13 +77,13 @@ public class LojaInterface {
                     String email = scanner.nextLine();
                     System.out.print("Senha: ");
                     String senha = scanner.nextLine();
-                    System.out.print("CNPJ: ");
-                    String cnpj = scanner.nextLine();
+                    System.out.print("CPF: ");
+                    String cpf = scanner.nextLine();
 
-                    LojaSystem.criarLoja(nome, email, senha, cnpj);
+                    clienteSystem.criarCliente(nome, email, senha, cpf);
                     break;
                 case 2:
-                    loginLoja();
+                    loginCliente();
                     break;
                 case 3:
                     return;
@@ -90,11 +91,9 @@ public class LojaInterface {
                     System.out.println("Opção inválida, tente novamente.");
             }
         }
-
-
     }
 
-    public void loginLoja() {
+    public void loginCliente() {
         int tentativas = 0;
         while(tentativas < 5) {
             System.out.print("E-mail: ");
@@ -102,12 +101,12 @@ public class LojaInterface {
             System.out.print("Senha: ");
             String senha = scanner.nextLine();
 
-            UserLoja loja = LojaSystem.autenticarLoja(email, senha);
-            if (loja != null) {
-                menuLoja(loja);
+            UserCliente cliente = clienteSystem.autenticarCliente(email, senha);
+            if (cliente != null) {
+                menuCliente(cliente);
                 return;
             } else {
-                System.out.println("Email ou senha incorretos!");
+                System.out.println("ID ou senha incorretos!");
                 tentativas++;
             }
 
@@ -115,5 +114,5 @@ public class LojaInterface {
 
     }
 
-
 }
+

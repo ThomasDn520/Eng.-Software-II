@@ -1,3 +1,7 @@
+package Admin;
+
+import User.UserAdmin;
+
 import java.util.Scanner;
 
 public class AdminInterface {

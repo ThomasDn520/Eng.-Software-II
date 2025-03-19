@@ -1,4 +1,7 @@
-import java.sql.*;
+package Cliente;
+
+import User.UserCliente;
+
 import java.util.Scanner;
 
 public class ClienteSystem {

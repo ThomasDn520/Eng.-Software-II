@@ -1,7 +1,11 @@
+package Loja;
+
+import Database.Database;
+import User.UserLoja;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class LojaDAO {
     public static void criarTabela() {
         String sql = "CREATE TABLE IF NOT EXISTS loja (" +
