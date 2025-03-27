@@ -13,6 +13,7 @@ src/main/java/TesteIgnore.java
 *.iml
 *.ipr
 *.db
+*.json
 
 ### Eclipse ###
 .apt_generated

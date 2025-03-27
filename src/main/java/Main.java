@@ -4,6 +4,7 @@ import Cliente.ClienteDAO;
 import Cliente.ClienteInterface;
 import Loja.LojaDAO;
 import Loja.LojaInterface;
+import Database.DatabaseJSON;
 
 import java.util.Scanner;
 
@@ -14,9 +15,7 @@ public class Main {
         ClienteInterface InterfaceCliente = new ClienteInterface();
         LojaInterface InterfaceLoja = new LojaInterface();
 
-        AdminDAO.criarTabela();
-        ClienteDAO.criarTabela();
-        LojaDAO.criarTabela();
+        DatabaseJSON.inicializarJSON();
         
         //InterfaceAdm.criarAdmTeste();
         // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
@@ -47,6 +46,8 @@ public class Main {
                             System.out.println("Encerrando o sistema...");
                             scanner.close();
                             return;  // Encerra o programa corretamente
+                        case 5:
+                            InterfaceAdm.loginAdmin();
                         default:
                             System.out.println("Opção inválida! Digite um número entre 1 e 4.");
                     }

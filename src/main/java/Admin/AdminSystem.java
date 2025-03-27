@@ -14,16 +14,64 @@ public class AdminSystem {
     private static List<UserCliente> clientes;
     private static List<UserLoja> lojas;
 
-    public static void criarAdmin(String nome, String email, String senha) {
+
+    public static void criarAdmin(Scanner scanner) {
+        System.out.println("\n--- Cadastro de Administrador ---");
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        // Aqui você pode escolher qual método usar (JSON ou SQL)
+        int id = AdminDAO.cadastrarAdmin(nome, email, senha); // Versão unificada
+
+        if (id > 0) {
+            System.out.println("Admin cadastrado com sucesso! ID: " + id);
+        } else {
+            System.out.println("Falha ao cadastrar admin.");
+        }
+    }
+
+    public static void criarAdminDiretamente(String nome, String email, String senha){
         AdminDAO.cadastrarAdmin(nome, email, senha);
     }
 
+    // Lista todos os admins
     public static void listarAdmins() {
         List<UserAdmin> admins = AdminDAO.listarTodos();
         System.out.println("\n==== Admins Registrados ====");
-        for (UserAdmin admin : admins) {
-            System.out.println("ID: " + admin.getId() + " | Nome: " + admin.getNome() + " | Email: " + admin.getEmail());
+
+        if (admins.isEmpty()) {
+            System.out.println("Nenhum admin cadastrado.");
+        } else {
+            for (UserAdmin admin : admins) {
+                System.out.println("ID: " + admin.getId() +
+                        " | Nome: " + admin.getNome() +
+                        " | Email: " + admin.getEmail());
+            }
         }
+    }
+
+    // Autentica um admin
+    public static UserAdmin autenticarAdmin(Scanner scanner) {
+        System.out.println("\n--- Login Administrador ---");
+        System.out.print("ID: ");
+        int id = scanner.nextInt();
+        scanner.nextLine(); // Limpa o buffer
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        UserAdmin admin = AdminDAO.autenticar(id, senha);
+
+        if (admin != null) {
+            System.out.println("Login bem-sucedido! Bem-vindo, " + admin.getNome());
+        } else {
+            System.out.println("ID ou senha incorretos.");
+        }
+
+        return admin;
     }
 
     public static void listarClientes() {
@@ -64,14 +112,6 @@ public class AdminSystem {
         }
 
 
-    }
-
-
-    public UserAdmin autenticarAdmin(int id, String senha) {
-        if (AdminDAO.validarLogin(id, senha)) {
-            return AdminDAO.buscarPorId(id);
-        }
-        return null;
     }
 
 
