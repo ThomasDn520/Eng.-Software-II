@@ -83,7 +83,7 @@ public class AdminSystem {
     }
 
     public static void listarLojas() {
-        List<UserLoja> lojas = LojaDAO.litarTodas();
+        List<UserLoja> lojas = LojaDAO.listarTodas();
         System.out.println("\n==== Lojas Registrados ====");
         for (UserLoja loja : lojas) {
             System.out.println("ID: " + loja.getId() + " | Nome: " + loja.getNome() + " | Email: " + loja.getEmail()+ " | cnpj: " + loja.getCnpj());

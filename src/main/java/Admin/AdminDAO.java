@@ -10,8 +10,6 @@ import java.util.List;
 
 public class AdminDAO {
 
-    // === MÉTODOS PRINCIPAIS ===
-
     public static boolean validarLogin(int id, String senha) {
         UserAdmin admin = buscarPorId(id);
         return admin != null && admin.validarSenha(senha);

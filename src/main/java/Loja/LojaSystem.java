@@ -11,7 +11,7 @@ public class LojaSystem {
     }
 
     public UserLoja autenticarLoja(String email, String senha){
-        if (LojaDAO.validarLogin(email, senha)) {
+        if (LojaDAO.validarLogin(email, senha) != null) {
             return LojaDAO.buscarPorEmail(email);
         }
         return null;

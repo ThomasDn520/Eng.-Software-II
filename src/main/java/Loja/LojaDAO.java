@@ -1,157 +1,175 @@
 package Loja;
 
-import Database.Database;
+import Database.DatabaseJSON;
 import User.UserLoja;
-
-import java.sql.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.List;
+
 public class LojaDAO {
-    public static void criarTabela() {
-        String sql = "CREATE TABLE IF NOT EXISTS loja (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "nome TEXT NOT NULL, " +
-                "email TEXT UNIQUE NOT NULL, " +
-                "senha TEXT NOT NULL, " +
-                "cnpj TEXT UNIQUE NOT NULL);";
 
-        try (Connection conn = Database.connect();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            System.out.println("Erro ao criar tabela de lojas : " + e.getMessage());
+    // === CRUD COMPLETO ===
+
+    public static int cadastrarLoja(String nome, String email, String senha, String cnpj) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        // Verifica se CNPJ ou email já existem
+        if (buscarPorCnpj(cnpj) != null) {
+            System.out.println("Erro: CNPJ já cadastrado!");
+            return -1;
         }
+        if (buscarPorEmail(email) != null) {
+            System.out.println("Erro: Email já cadastrado!");
+            return -2;
+        }
+
+        // Gera novo ID
+        int novoId = lojas.size() > 0 ?
+                lojas.get(lojas.size()-1).getAsJsonObject().get("id").getAsInt() + 1 : 1;
+
+        // Cria nova loja
+        JsonObject novaLoja = new JsonObject();
+        novaLoja.addProperty("id", novoId);
+        novaLoja.addProperty("nome", nome);
+        novaLoja.addProperty("email", email);
+        novaLoja.addProperty("senha", senha);
+        novaLoja.addProperty("cnpj", cnpj);
+
+        // Adiciona e salva
+        lojas.add(novaLoja);
+        DatabaseJSON.salvarLojas(lojas);
+
+        System.out.println("Loja cadastrada com sucesso! ID: " + novoId);
+        return novoId;
     }
 
-    public static void cadastrarLoja(String nome, String email, String senha, String cnpj) {
-        String sql = "INSERT INTO loja (nome, email, senha, cnpj) VALUES (?, ?, ?, ?)";
+    public static UserLoja validarLogin(String email, String senha) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
 
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, nome);
-            stmt.setString(2, email);
-            stmt.setString(3, senha);
-            stmt.setString(4, cnpj);
-            stmt.executeUpdate();
-
-            System.out.println("Loja cadastrada com sucesso!");
-        } catch (SQLException e) {
-            System.out.println("Erro ao cadastrar loja: " + e.getMessage());
-        }
-    }
-
-    public static boolean validarLogin(String email, String senha) {
-        String sql = "SELECT * FROM loja WHERE email = ? AND senha = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            if (conn == null) return false;
-
-            pstmt.setString(1, email);
-            pstmt.setString(2, senha);
-            ResultSet rs = pstmt.executeQuery();
-
-            boolean existe = rs.next();
-            rs.close();
-            return existe;
-        } catch (Exception e) {
-            System.out.println("Erro ao validar login: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public static UserLoja buscarPorEmail(String email) {
-        String sql = "SELECT * FROM loja WHERE email = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
+        for (JsonElement element : lojas) {
+            JsonObject loja = element.getAsJsonObject();
+            if (loja.get("email").getAsString().equalsIgnoreCase(email) &&
+                    loja.get("senha").getAsString().equals(senha)) {
                 return new UserLoja(
-                        rs.getInt("id"),
-                        rs.getString("nome"),
-                        rs.getString("email"),
-                        rs.getString("senha"),
-                        rs.getString("cnpj")
+                        loja.get("id").getAsInt(),
+                        loja.get("nome").getAsString(),
+                        email,
+                        senha,
+                        loja.get("cnpj").getAsString()
                 );
             }
-        } catch (SQLException e) {
-            System.out.println("Erro ao buscar Loja " + e.getMessage());
         }
         return null;
     }
 
-    public static boolean atualizar(UserLoja loja) {
-        String sql = "UPDATE loja SET nome = ?, email = ?, senha = ?, cnpj = ? WHERE id = ?";
+    public static UserLoja buscarPorEmail(String email) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
 
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, loja.getNome());
-            stmt.setString(2, loja.getEmail());
-            stmt.setString(3, loja.getSenha());
-            stmt.setString(4, loja.getCnpj());
-            stmt.setInt(5, loja.getId());
-            int rowsUpdated = stmt.executeUpdate();
-
-            if (rowsUpdated > 0) {
-                return true;
+        for (JsonElement element : lojas) {
+            JsonObject loja = element.getAsJsonObject();
+            if (loja.get("email").getAsString().equalsIgnoreCase(email)) {
+                return new UserLoja(
+                        loja.get("id").getAsInt(),
+                        loja.get("nome").getAsString(),
+                        email,
+                        loja.get("senha").getAsString(),
+                        loja.get("cnpj").getAsString()
+                );
             }
-        } catch (SQLException e) {
-            System.out.println("Erro ao atualizar loja: " + e.getMessage());
         }
-        return false;
+        return null;
+    }
+
+    public static UserLoja buscarPorCnpj(String cnpj) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement element : lojas) {
+            JsonObject loja = element.getAsJsonObject();
+            if (loja.get("cnpj").getAsString().equals(cnpj)) {
+                return new UserLoja(
+                        loja.get("id").getAsInt(),
+                        loja.get("nome").getAsString(),
+                        loja.get("email").getAsString(),
+                        loja.get("senha").getAsString(),
+                        cnpj
+                );
+            }
+        }
+        return null;
     }
 
     public static boolean removerLoja(String cnpj) {
-        String sql = "DELETE FROM loja WHERE cnpj = ?";
+        JsonArray lojas = DatabaseJSON.carregarLojas();
 
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, cnpj);
-            int rowsDeleted = stmt.executeUpdate();
-
-            if (rowsDeleted > 0) {
+        for (int i = 0; i < lojas.size(); i++) {
+            JsonObject loja = lojas.get(i).getAsJsonObject();
+            if (loja.get("cnpj").getAsString().equals(cnpj)) {
+                lojas.remove(i);
+                DatabaseJSON.salvarLojas(lojas);
+                System.out.println("Loja removida com sucesso!");
                 return true;
-            } else {
-                System.out.println("Nenhuma loja  encontrado com este CNPJ");
             }
-        } catch (SQLException e) {
-            System.out.println("Erro ao excluir Loja: " + e.getMessage());
         }
+
+        System.out.println("Loja com CNPJ " + cnpj + " não encontrada");
         return false;
     }
 
-    public static List<UserLoja> litarTodas() {
-        List<UserLoja> lojas = new ArrayList<>();
-        String sql = "SELECT * FROM loja";
+    public static List<UserLoja> listarTodas() {
+        List<UserLoja> todasLojas = new ArrayList<>();
+        JsonArray lojas = DatabaseJSON.carregarLojas();
 
-        try (Connection conn = Database.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                UserLoja loja = new UserLoja(
-                        rs.getInt("id"),
-                        rs.getString("nome"),
-                        rs.getString("email"),
-                        rs.getString("senha"),
-                        rs.getString("cnpj")
-                );
-                lojas.add(loja);
-            }
-        } catch (Exception e) {
-            System.out.println("Erro ao listar lojas: " + e.getMessage());
+        for (JsonElement element : lojas) {
+            JsonObject loja = element.getAsJsonObject();
+            todasLojas.add(new UserLoja(
+                    loja.get("id").getAsInt(),
+                    loja.get("nome").getAsString(),
+                    loja.get("email").getAsString(),
+                    loja.get("senha").getAsString(),
+                    loja.get("cnpj").getAsString()
+            ));
         }
-        return lojas;
 
+        return todasLojas;
     }
 
+    // funcao de atualizar loja ainda nao esta funcionando completamente
+    public static boolean atualizar(UserLoja lojaAtualizada) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+        boolean encontrada = false;
 
+        // Verifica se novo email já existe (para outra loja)
+        for (JsonElement element : lojas) {
+            JsonObject l = element.getAsJsonObject();
+            if (l.get("id").getAsInt() != lojaAtualizada.getId() &&
+                    l.get("email").getAsString().equalsIgnoreCase(lojaAtualizada.getEmail())) {
+                System.out.println("Erro: Email já está em uso por outra loja");
+                return false;
+            }
+        }
 
+        // Atualiza a loja
+        for (int i = 0; i < lojas.size(); i++) {
+            JsonObject loja = lojas.get(i).getAsJsonObject();
+            if (loja.get("id").getAsInt() == lojaAtualizada.getId()) {
+                loja.addProperty("nome", lojaAtualizada.getNome());
+                loja.addProperty("email", lojaAtualizada.getEmail());
+                loja.addProperty("senha", lojaAtualizada.getSenha());
+                loja.addProperty("cnpj", lojaAtualizada.getCnpj());
+                encontrada = true;
+                break;
+            }
+        }
+
+        if (encontrada) {
+            DatabaseJSON.salvarLojas(lojas);
+            System.out.println("Loja atualizada com sucesso!");
+            return true;
+        }
+
+        System.out.println("Erro: Loja não encontrada");
+        return false;
+    }
 }
