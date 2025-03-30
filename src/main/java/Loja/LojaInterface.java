@@ -21,10 +21,14 @@ public class LojaInterface {
             System.out.println("\n===== Painel da Loja =====");
             System.out.println("Bem vindo, " + loja.getNome() + "!");
 
-            System.out.println("\n1.Informações Loja");
+            System.out.println("\n1. Informações Loja");
             System.out.println("2. Adicionar Produto");
-            System.out.println("3. Atualizar dados");
-            System.out.println("4. Sair do sistema");
+            System.out.println("3. Listar Produtos");
+            System.out.println("4. Editar Produto");
+            System.out.println("5. Remover Produto");
+            System.out.println("6. Buscar Produto");
+            System.out.println("7. Atualizar dados");
+            System.out.println("8. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -32,17 +36,28 @@ public class LojaInterface {
                 scanner.nextLine();
 
                 switch (opcao) {
-
                     case 1:
                         System.out.println("Função não implementada!");
                         break;
                     case 2:
-                        System.out.println("Função não implementada!");
+                        cadastrarProduto();
                         break;
                     case 3:
-                        LojaSystem.atualizarLoja(scanner, loja);
+                        listarProdutos();
                         break;
                     case 4:
+                        editarProduto();
+                        break;
+                    case 5:
+                        removerProduto();
+                        break;
+                    case 6:
+                        buscarProduto();
+                        break;
+                    case 7:
+                        LojaSystem.atualizarLoja(scanner, loja);
+                        break;
+                    case 8:
                         continuar = false;
                         System.out.println("Saindo...");
                         break;
@@ -53,10 +68,7 @@ public class LojaInterface {
                 System.out.println("Entrada inválida! Digite um número.");
                 scanner.next();
             }
-
-
         }
-
     }
 
 
@@ -118,6 +130,11 @@ public class LojaInterface {
         } System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
 
     }
+
+
+
+
+
 
 
 }
