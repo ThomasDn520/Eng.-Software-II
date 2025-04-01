@@ -14,7 +14,7 @@ public abstract class User {
     }
 
     public void setId(int id) {
-        Id = id;
+        this.Id = id;
     }
 
     public void setNome(String nome) {

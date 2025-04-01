@@ -1,8 +1,5 @@
-import Admin.AdminDAO;
 import Admin.AdminInterface;
-import Cliente.ClienteDAO;
 import Cliente.ClienteInterface;
-import Loja.LojaDAO;
 import Loja.LojaInterface;
 import Database.DatabaseJSON;
 
@@ -10,11 +7,10 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
+        Scanner scanner0 = new Scanner(System.in);
         AdminInterface InterfaceAdm = new AdminInterface();
         ClienteInterface InterfaceCliente = new ClienteInterface();
-        LojaInterface InterfaceLoja = new LojaInterface();
-
+        LojaInterface InterfaceLoja = new LojaInterface(scanner0);
         DatabaseJSON.inicializarJSON();
         
         // InterfaceAdm.criarAdmTeste();

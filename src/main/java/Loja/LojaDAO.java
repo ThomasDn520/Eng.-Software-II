@@ -79,8 +79,9 @@ public class LojaDAO {
                 );
             }
         }
-        return null;
+        return null; // Retorna null caso a loja não seja encontrada
     }
+
 
     public static UserLoja buscarPorCnpj(String cnpj) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
