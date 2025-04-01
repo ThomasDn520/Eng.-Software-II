@@ -1,68 +1,114 @@
 package Produto;
 
+import User.User;
+import User.UserLoja;
+
 import java.util.List;
 import java.util.Scanner;
 
 public class ProdutoSystem {
-// ALERLTA,TEM FUNÇÕES AQUI QUE PRECISAM DA IMPLEMENTAÇÃO NO PRODUTO NAO, TODAS QUE TIVEREM "Produto.DAO.*nome dela
-    Scanner scanner = new Scanner(System.in);
-    private void cadastrarProduto() {
+    private final Scanner scanner = new Scanner(System.in);
 
+    public void iniciar(UserLoja loja) {
+        while (true) {
+            System.out.println("\n=== MENU PRODUTOS ===");
+            System.out.println("1. Cadastrar Produto");
+            System.out.println("2. Listar Produtos");
+            System.out.println("3. Editar Produto");
+            System.out.println("4. Remover Produto");
+            System.out.println("5. Buscar Produto");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+
+            int opcao;
+            try {
+                opcao = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Opção inválida! Digite um número.");
+                continue;
+            }
+
+            switch (opcao) {
+                case 1 -> cadastrarProduto(loja);
+                case 2 -> listarProdutos(loja);
+                case 4 -> removerProduto(loja);
+                case 5 -> buscarProduto(loja);
+                case 0 -> {
+                    System.out.println("Saindo...");
+                    return;
+                }
+                default -> System.out.println("Opção inválida! Tente novamente.");
+            }
+        }
+    }
+
+    private void cadastrarProduto(UserLoja loja) {
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
+
         System.out.print("Valor: ");
-        double valor = scanner.nextDouble();
-        scanner.nextLine();
+        double valor;
+        try {
+            valor = Double.parseDouble(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Valor inválido! Cadastro cancelado.");
+            return;
+        }
+
         System.out.print("Tipo: ");
         String tipo = scanner.nextLine();
+
         System.out.print("Quantidade: ");
-        int quantidade = scanner.nextInt();
-        scanner.nextLine();
+        int quantidade;
+        try {
+            quantidade = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Quantidade inválida! Cadastro cancelado.");
+            return;
+        }
+
         System.out.print("Marca: ");
         String marca = scanner.nextLine();
+
         System.out.print("Descrição: ");
         String descricao = scanner.nextLine();
 
         Produto produto = new Produto(nome, valor, tipo, quantidade, marca, descricao);
-        ProdutoDAO.adicionarProduto(produto);
+        ProdutoDAO.adicionarProduto(loja, produto);
         System.out.println("Produto cadastrado com sucesso!");
     }
 
-    private void listarProdutos() {
-        List<Produto> produtos = ProdutoDAO.listarProdutos();
+    private void listarProdutos(UserLoja loja) {
+        List<Produto> produtos = ProdutoDAO.listarProdutos(loja);
         if (produtos.isEmpty()) {
-           // System.out.println("Nenhum produto cadastrado.");
+            System.out.println("Nenhum produto cadastrado.");
         } else {
+            System.out.println("\n=== LISTA DE PRODUTOS ===");
             for (Produto p : produtos) {
-                //System.out.println(p);
-           }
-       }
-   }
-
-    private void editarProduto() {
-        listarProdutos();
-        System.out.print("Informe o nome do produto que deseja editar: ");
-        String nome = scanner.nextLine();
-        ProdutoDAO.editarProduto(nome, scanner);
+                System.out.println(p.getNome() + "| R$" + p.getValor() +",00 | " + p.getTipo() + "| " + p.getMarca());
+                System.out.println("Descricao: "+ p.getDescricao());
+                System.out.println(("Quantidade: "+ p.getQuantidade()));
+                System.out.println("---------------------");
+            }
+        }
     }
 
-    private void removerProduto() {
-        listarProdutos();
+    private void removerProduto(UserLoja loja) {
+        listarProdutos(loja);
         System.out.print("Informe o nome do produto que deseja remover: ");
         String nome = scanner.nextLine();
-        ProdutoDAO.removerProduto(nome);
+        ProdutoDAO.removerProduto(loja, nome);
     }
 
-    private void buscarProduto() {
+    private void buscarProduto(UserLoja loja) {
         System.out.print("Informe o nome do produto para buscar: ");
         String nome = scanner.nextLine();
-        Produto produto = ProdutoDAO.buscarProduto(nome);
+        Produto produto = ProdutoDAO.buscarProduto(loja, nome);
         if (produto != null) {
+            System.out.println("\n=== PRODUTO ENCONTRADO ===");
             System.out.println(produto);
         } else {
             System.out.println("Produto não encontrado.");
         }
     }
-
-
 }

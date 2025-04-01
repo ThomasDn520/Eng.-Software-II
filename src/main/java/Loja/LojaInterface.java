@@ -1,6 +1,7 @@
 package Loja;
 
 import User.UserLoja;
+import Produto.*;
 
 import java.util.Scanner;
 
@@ -8,10 +9,12 @@ public class LojaInterface {
 
     private Scanner scanner = new Scanner(System.in);
     private LojaSystem LojaSystem;
+    private ProdutoSystem produtoSystem;
 
     public LojaInterface() {
 
         this.LojaSystem = new LojaSystem();
+        this.produtoSystem = new ProdutoSystem();
     }
 
 
@@ -22,13 +25,8 @@ public class LojaInterface {
             System.out.println("Bem vindo, " + loja.getNome() + "!");
 
             System.out.println("\n1. Informações Loja");
-            System.out.println("2. Adicionar Produto");
-            System.out.println("3. Listar Produtos");
-            System.out.println("4. Editar Produto");
-            System.out.println("5. Remover Produto");
-            System.out.println("6. Buscar Produto");
-            System.out.println("7. Atualizar dados");
-            System.out.println("8. Sair do sistema");
+            System.out.println("2. Gerenciar Produtos");
+            System.out.println("3. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -37,22 +35,11 @@ public class LojaInterface {
 
                 switch (opcao) {
                     case 1:
-                        System.out.println("Função não implementada!");
+                        infosLoja(loja);
                         break;
                     case 2:
-                        cadastrarProduto();
-                        break;
-                    case 3:
-                        listarProdutos();
-                        break;
-                    case 4:
-                        editarProduto();
-                        break;
-                    case 5:
-                        removerProduto();
-                        break;
-                    case 6:
-                        buscarProduto();
+                        produtoSystem.iniciar(loja);
+
                         break;
                     case 7:
                         LojaSystem.atualizarLoja(scanner, loja);
@@ -108,6 +95,12 @@ public class LojaInterface {
         }
 
 
+    }
+
+    public void infosLoja(UserLoja loja){
+        System.out.println("Nome: " + loja.getNome());
+        System.out.println("E-mail" + loja.getEmail());
+        System.out.println("CNPJ: " + loja.getCnpj());
     }
 
     public void loginLoja() {
