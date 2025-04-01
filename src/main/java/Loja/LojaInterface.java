@@ -122,12 +122,9 @@ public class LojaInterface {
             String senha = scanner.nextLine();
             System.out.println("Senha recebida: " + senha); // <-- Debug
 
-            System.out.println("Email recebido: " + email);
-            System.out.println("Senha recebida: " + senha);
 
 
             UserLoja loja = lojaSystem.autenticarLoja(email, senha);
-            System.out.println("Chamando autenticarLoja()..."); // <-- Debug
 
             if (loja != null) {
                 System.out.println("Login bem-sucedido!"); // <-- Debug
