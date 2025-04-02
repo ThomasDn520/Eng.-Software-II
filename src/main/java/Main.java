@@ -16,7 +16,7 @@ public class Main {
         LojaInterface InterfaceLoja = new LojaInterface();
 
         DatabaseJSON.inicializarJSON();
-        
+
         // InterfaceAdm.criarAdmTeste();
         // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
         // Basta rodas uma vez e os adms serão armazenados no bd

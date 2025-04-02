@@ -37,13 +37,17 @@ public class LojaSystem {
         String cnpj = scanner.nextLine().trim();
         if (cnpj.isEmpty()) cnpj = loja.getCnpj();
 
-        if(LojaDAO.atualizar(loja)){
+        // Atualiza os atributos antes de salvar
+        loja.setNome(nome);
+        loja.setEmail(email);
+        loja.setSenha(senha);
+        loja.setCnpj(cnpj);
+
+        // Tenta atualizar no banco de dados
+        boolean sucesso = LojaDAO.atualizar(loja);
+        if (sucesso) {
             System.out.println("Dados da loja atualizados com sucesso!");
-            loja.setNome(nome);
-            loja.setEmail(email);
-            loja.setSenha(senha);
-            loja.setCnpj(cnpj);
-        } else{
+        } else {
             System.out.println("Erro ao atualizar dados");
         }
     }

@@ -79,7 +79,7 @@ public class AdminInterface {
             System.out.println("\n--- LOGIN ADMIN ---");
 
             // Captura ID
-            int id = lerIdAdmin();
+            int id = lerIdAdmin(scanner);
 
             // Captura senha
             System.out.print("Digite sua senha: ");
@@ -101,7 +101,7 @@ public class AdminInterface {
         System.out.println("\nNúmero máximo de tentativas excedido. Acesso bloqueado temporariamente.");
     }
 
-    private int lerIdAdmin() {
+    public int lerIdAdmin(Scanner scanner) {
         while (true) {
             try {
                 System.out.print("ID do Admin: ");
@@ -112,4 +112,7 @@ public class AdminInterface {
         }
     }
 
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
+    }
 }

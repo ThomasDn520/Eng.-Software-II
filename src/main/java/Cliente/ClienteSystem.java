@@ -10,13 +10,13 @@ public class ClienteSystem {
         ClienteDAO.cadastrarCliente(nome, email, senha, cpf);
     }
 
-    public UserCliente autenticarCliente(String email, String senha){
+    public static UserCliente autenticarCliente(String email, String senha){
         if (ClienteDAO.validarLogin(email, senha)) {
             return ClienteDAO.buscarPorEmail(email);
         }
         return null;
     }
-// função de atualizar clientes ainda não esta funcionando corretamente
+
     public static void atualizarCliente(Scanner scanner, UserCliente cliente) {
         System.out.println("\n===== Atualização de Dados =====");
         System.out.println("Deixe em branco para manter os dados atuais.");
@@ -37,14 +37,18 @@ public class ClienteSystem {
         String cpf = scanner.nextLine().trim();
         if (cpf.isEmpty()) cpf = cliente.getCpf();
 
+        // Primeiro, atualiza o objeto cliente
+        cliente.setNome(nome);
+        cliente.setEmail(email);
+        cliente.setSenha(senha);
+        cliente.setCpf(cpf);
+
+        // Depois, salva no banco de dados
         if(ClienteDAO.atualizar(cliente)){
             System.out.println("Dados do cliente atualizados com sucesso!");
-            cliente.setNome(nome);
-            cliente.setEmail(email);
-            cliente.setSenha(senha);
-            cliente.setCpf(cpf);
-        } else{
+        } else {
             System.out.println("Erro ao atualizar dados.");
         }
     }
+
 }

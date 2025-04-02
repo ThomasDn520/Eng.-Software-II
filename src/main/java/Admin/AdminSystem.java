@@ -39,7 +39,7 @@ public class AdminSystem {
     }
 
     // Lista todos os admins
-    public static void listarAdmins() {
+    public static List<UserAdmin> listarAdmins() {
         List<UserAdmin> admins = AdminDAO.listarTodos();
         System.out.println("\n==== Admins Registrados ====");
 
@@ -52,6 +52,7 @@ public class AdminSystem {
                         " | Email: " + admin.getEmail());
             }
         }
+        return admins;
     }
 
     // Autentica um admin
@@ -74,20 +75,22 @@ public class AdminSystem {
         return admin;
     }
 
-    public static void listarClientes() {
-        List<UserCliente> cleintes = ClienteDAO.listarTodos();
+    public static List<UserCliente> listarClientes() {
+        List<UserCliente> clientes = ClienteDAO.listarTodos();
         System.out.println("\n==== Clientes Registrados ====");
-        for (UserCliente cliente : cleintes) {
+        for (UserCliente cliente : clientes) {
             System.out.println("ID: " + cliente.getId() + " | Nome: " + cliente.getNome() + " | Email: " + cliente.getEmail()+ " | cpf: " + cliente.getCpf());
         }
+        return clientes;
     }
 
-    public static void listarLojas() {
+    public static List<UserLoja> listarLojas() {
         List<UserLoja> lojas = LojaDAO.listarTodas();
         System.out.println("\n==== Lojas Registrados ====");
         for (UserLoja loja : lojas) {
             System.out.println("ID: " + loja.getId() + " | Nome: " + loja.getNome() + " | Email: " + loja.getEmail()+ " | cnpj: " + loja.getCnpj());
         }
+        return lojas;
 
     }
 

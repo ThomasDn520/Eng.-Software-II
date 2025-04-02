@@ -1,7 +1,5 @@
 package User;
 
-import User.User;
-
 public class UserLoja extends User {
 
     private String cnpj;

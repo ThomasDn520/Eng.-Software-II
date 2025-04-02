@@ -1,22 +1,22 @@
 package Database;
 
 import User.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
+
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.ArrayList;
 
 public class DatabaseJSON {
+
     public static final String FILE_NAME_ADMIN = "database.json";       // Admins
     public static final String FILE_NAME_CLIENTE = "database_cliente.json"; // Clientes
     public static final String FILE_NAME_LOJA = "database_loja.json";
     public static final String FILE_NAME_PRODUTOS = "database_produtos.json";// Lojas
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
 
     // Tipos para desserialização
     private static final Type ADMIN_LIST_TYPE = new TypeToken<List<UserAdmin>>(){}.getType();
@@ -47,6 +47,7 @@ public class DatabaseJSON {
     }
 
     // Métodos para carregar dados
+
     public static JsonArray carregarAdmins() {
         return carregarArray(FILE_NAME_ADMIN, "admins");
     }
@@ -74,6 +75,7 @@ public class DatabaseJSON {
     }
 
     // Métodos para salvar dados
+
     public static void salvarAdmins(JsonArray admins) {
         salvarArray(FILE_NAME_ADMIN, "admins", admins);
     }
