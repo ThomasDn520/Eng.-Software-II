@@ -6,8 +6,8 @@ import java.util.Scanner;
 
 public class ClienteInterface {
 
-    private Scanner scanner = new Scanner(System.in);
-    private ClienteSystem clienteSystem;
+    protected Scanner scanner = new Scanner(System.in);
+    protected ClienteSystem clienteSystem;
 
     public ClienteInterface() {
         this.clienteSystem = new ClienteSystem();
