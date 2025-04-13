@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class LojaInterface {
 
-    private Scanner scanner;
-    private LojaSystem lojaSystem;
+    protected Scanner scanner;
+    protected LojaSystem lojaSystem;
 
     // Modificado para aceitar um Scanner externo
     public LojaInterface(Scanner scanner) {
@@ -18,6 +18,14 @@ public class LojaInterface {
     public LojaInterface(Scanner scanner, LojaSystem lojaSystem) {
         this.scanner = scanner;
         this.lojaSystem = lojaSystem; // Usa mock no teste
+    }
+
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public void atualizarLoja(Scanner scanner, UserLoja loja) {
+        LojaSystem.atualizarLoja(scanner, loja);
     }
 
     public void menuLoja(UserLoja loja) {
