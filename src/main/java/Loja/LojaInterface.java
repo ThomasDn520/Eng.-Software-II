@@ -9,7 +9,7 @@ public class LojaInterface {
     protected LojaSystem lojaSystem;
 
     // Modificado para aceitar um Scanner externo
-    public LojaInterface(Scanner scanner) {
+    public LojaInterface() {
         this.scanner = scanner;
         this.lojaSystem = new LojaSystem();
     }

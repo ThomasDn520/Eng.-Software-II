@@ -31,7 +31,7 @@ public class LojaInterfaceTest {
         lojaSystem = new LojaSystem();
         lojaSystem = mock(LojaSystem.class);
         lojaInterface = new LojaInterface(scanner, lojaSystem);
-        lojaInterface = Mockito.spy(new LojaInterface(scanner));
+        lojaInterface = Mockito.spy(new LojaInterface());
 
         // Redireciona a saída para capturar os prints
         outputStream = new ByteArrayOutputStream();

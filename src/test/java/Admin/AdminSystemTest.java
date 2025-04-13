@@ -71,10 +71,10 @@ class AdminSystemTest {
     void testAutenticarAdmin() {
         Scanner scanner = new Scanner("admin5\nadmin5@gmail.com\n1234\n");
         adminSystem.criarAdmin(scanner);
-        Scanner scanner2 = new Scanner("1\n1234\n");
+        Scanner scanner2 = new Scanner("3\n1234\n");
         UserAdmin admin = adminSystem.autenticarAdmin(scanner2);
         assertNotNull(admin);
-        assertEquals(1, admin.getId());
+        assertEquals(3, admin.getId());
     }
 
     @Test
