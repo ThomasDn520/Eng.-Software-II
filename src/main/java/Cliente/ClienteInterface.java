@@ -6,8 +6,8 @@ import java.util.Scanner;
 
 public class ClienteInterface {
 
-    private Scanner scanner = new Scanner(System.in);
-    private ClienteSystem clienteSystem;
+    protected Scanner scanner = new Scanner(System.in);
+    protected ClienteSystem clienteSystem;
 
     public ClienteInterface() {
         this.clienteSystem = new ClienteSystem();
@@ -63,7 +63,7 @@ public class ClienteInterface {
             System.out.println("1. Cadastrar Cliente");
             System.out.println("2. Fazer Login");
             System.out.println("3. Voltar ao Menu Principal");
-            System.out.print("Escolha uma opção (1-4): ");
+            System.out.print("Escolha uma opção (1-3): ");
 
             Scanner scanner = new Scanner(System.in);
             int opcao = scanner.nextInt();
