@@ -46,14 +46,15 @@ class AdminDAOTest {
 
     @Test
     void testCadastrarAdminSucesso() throws IOException {
+        JsonArray adminsBefore = carregarAdmins();
         AdminDAO adminDAO = new AdminDAO();
         int id = adminDAO.cadastrarAdmin("Novo Admin", "novo@admin.com", "senha123");
         assertTrue(id > 0, "O ID retornado deve ser maior que zero");
 
-        JsonArray admins = carregarAdmins();
-        assertEquals(1, admins.size(), "Deve haver um administrador no arquivo");
+        JsonArray adminsAfter = carregarAdmins();
+        assertEquals(adminsBefore.size() + 1, adminsAfter.size(), "Deve haver um administrador no arquivo");
 
-        JsonObject admin = admins.get(0).getAsJsonObject();
+        JsonObject admin = adminsAfter.get(adminsAfter.size() - 1).getAsJsonObject();
         assertEquals("Novo Admin", admin.get("nome").getAsString());
         assertEquals("novo@admin.com", admin.get("email").getAsString());
         assertEquals("senha123", admin.get("senha").getAsString());
@@ -112,9 +113,10 @@ class AdminDAOTest {
     @Test
     void testListarTodos() throws IOException {
         AdminDAO adminDAO = new AdminDAO();
+        List<UserAdmin> listaAdminsBefore = adminDAO.listarTodos();
         adminDAO.cadastrarAdmin("Admin 1", "admin1@teste.com", "senha123");
         adminDAO.cadastrarAdmin("Admin 2", "admin2@teste.com", "senha123");
-        List<UserAdmin> listaAdmins = adminDAO.listarTodos();
-        assertEquals(2, listaAdmins.size());
+        List<UserAdmin> listaAdminsAfter = adminDAO.listarTodos();
+        assertEquals(listaAdminsBefore.size() + 2, listaAdminsAfter.size());
     }
 }

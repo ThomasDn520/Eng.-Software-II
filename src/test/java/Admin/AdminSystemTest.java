@@ -5,10 +5,13 @@ import Loja.LojaDAO;
 import User.UserAdmin;
 import User.UserCliente;
 import User.UserLoja;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static Database.DatabaseJSON.carregarAdmins;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
@@ -70,11 +73,13 @@ class AdminSystemTest {
     @Test
     void testAutenticarAdmin() {
         Scanner scanner = new Scanner("admin5\nadmin5@gmail.com\n1234\n");
+        JsonArray adminsBefore = carregarAdmins();
         adminSystem.criarAdmin(scanner);
-        Scanner scanner2 = new Scanner("1\n1234\n");
-        UserAdmin admin = adminSystem.autenticarAdmin(scanner2);
-        assertNotNull(admin);
-        assertEquals(1, admin.getId());
+        JsonArray adminsAfter = carregarAdmins();
+        JsonObject admin = adminsAfter.get(adminsAfter.size() - 1).getAsJsonObject();
+        Scanner scanner2 = new Scanner(admin.get("id").getAsInt() + "\n" + "1234\n");
+        UserAdmin adminAutenticado = adminSystem.autenticarAdmin(scanner2);
+        assertNotNull(adminAutenticado);
     }
 
     @Test
