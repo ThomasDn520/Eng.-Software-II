@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class LojaInterface {
 
-    protected Scanner scanner;
-    protected LojaSystem lojaSystem;
+    private Scanner scanner = new Scanner(System.in);
+    LojaSystem lojaSystem;
 
     // Modificado para aceitar um Scanner externo
     public LojaInterface() {
@@ -35,7 +35,7 @@ public class LojaInterface {
             System.out.println("Bem vindo, " + loja.getNome() + "!");
 
             System.out.println("\n1. Informações Loja");
-            System.out.println("2. Adicionar Produto");
+            System.out.println("2. Gerenciar produtos");
             System.out.println("3. Atualizar dados");
             System.out.println("4. Sair do sistema");
             System.out.print("Escolha uma opção: ");
@@ -49,7 +49,7 @@ public class LojaInterface {
                         System.out.println("Função não implementada!");
                         break;
                     case 2:
-                        System.out.println("Função não implementada!");
+                        LojaSystem.menuProdutos(loja);
                         break;
                     case 3:
                         LojaSystem.atualizarLoja(scanner, loja);

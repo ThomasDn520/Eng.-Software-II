@@ -1,7 +1,11 @@
 package Cliente;
 
+import User.User;
 import User.UserCliente;
+import Produto.Produto;
+import Produto.ProdutoDAO;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class ClienteSystem {
@@ -49,6 +53,74 @@ public class ClienteSystem {
         } else {
             System.out.println("Erro ao atualizar dados.");
         }
+    }
+
+    public static boolean buscarProdutoPorNome(UserCliente cliente, Scanner scanner, String nomeBusca) {
+
+        Produto[] produtos = ProdutoDAO.buscarTodosProdutos();
+        boolean encontrado = false;
+
+        System.out.println("\n=== RESULTADOS DA BUSCA ===");
+
+        for (Produto produto : produtos) {
+            if (produto.getNome().toLowerCase().contains(nomeBusca)) {
+                System.out.println("Nome: " + produto.getNome());
+                System.out.println("Loja: " + produto.getLoja());
+                System.out.println("Valor: R$" + produto.getValor());
+                System.out.println("Tipo: " + produto.getTipo());
+                System.out.println("Marca: " + produto.getMarca());
+                System.out.println("Descrição: " + produto.getDescricao());
+                System.out.println("-----------------------------");
+
+                encontrado = true;
+
+            }
+        }
+
+        if (!encontrado) {
+            System.out.println("Nenhum produto encontrado.");
+            return encontrado;
+        } else{
+
+            System.out.println("\nDigite o nome e loja do produto para adiconar ao carrinho:");
+            System.out.println("Nome do produto: ");
+            String nomeProdutoBusca = scanner.nextLine().trim();
+            System.out.println("Nome da loja: ");
+            String nomeLojaBusca = scanner.nextLine().trim();
+
+            for (Produto produto : produtos){
+                if(produto.getNome().equalsIgnoreCase(nomeProdutoBusca) && produto.getLoja().equalsIgnoreCase(nomeLojaBusca)){
+                    ClienteDAO.adicionarProdutoAoCarrinho(cliente, produto, 1);
+                }
+            }
+
+        }
+        return encontrado;
+    }
+
+
+    public static boolean exibirCarrinho(UserCliente cliente){
+        if(ClienteDAO.exibirItensCarrinho(cliente)){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean removerProduto(UserCliente cliente, String itemRemover){
+        if(ClienteDAO.exibirItensCarrinho(cliente)){
+            if(ClienteDAO.removerProdutoDoCarrinho(cliente, itemRemover)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean exibirHistoricoCliente(UserCliente cliente){
+        return ClienteDAO.exibirHistoricoCompras(cliente);
+    }
+
+    public static boolean efetuarCompra(UserCliente cliente, Scanner scanner){
+        return ClienteDAO.efetuarCompra(cliente, scanner);
     }
 
 }

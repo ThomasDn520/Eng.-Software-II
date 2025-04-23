@@ -4,6 +4,7 @@ import Database.DatabaseJSON;
 import User.UserLoja;
 import com.google.gson.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,4 +137,74 @@ public class ProdutoDAO {
         System.out.println("Produto não encontrado!");
         return null;
     }
+
+    public static Produto[] buscarTodosProdutos() {
+        List<Produto> listaProdutos = new ArrayList<>();
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement element : lojas) {
+            JsonObject lojaJson = element.getAsJsonObject();
+            if (lojaJson.has("produtos")) {
+                JsonArray produtos = lojaJson.getAsJsonArray("produtos");
+
+                for (JsonElement prodElement : produtos) {
+                    JsonObject produtoJson = prodElement.getAsJsonObject();
+                    Produto produto = new Produto(
+                            produtoJson.get("nome").getAsString(),
+                            produtoJson.get("valor").getAsDouble(),
+                            produtoJson.get("tipo").getAsString(),
+                            produtoJson.get("quantidade").getAsInt(),
+                            produtoJson.get("marca").getAsString(),
+                            produtoJson.get("descricao").getAsString()
+                    );
+
+                    produto.setLoja(lojaJson.get("nome").getAsString());
+                    if(produto.getQuantidade() > 0){
+                        listaProdutos.add(produto);
+                    }
+                }
+            }
+        }
+
+        return listaProdutos.toArray(new Produto[0]);
+    }
+
+    public static boolean atualizarEstoqueLojaCompra(String lojaNome, String nomeProduto, int quantidadeCompra) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement lojaElement : lojas) {
+            JsonObject lojaJson = lojaElement.getAsJsonObject();
+            String nomeLoja = lojaJson.get("nome").getAsString();
+
+            if (nomeLoja.equalsIgnoreCase(lojaNome)) {
+                JsonArray produtos = lojaJson.getAsJsonArray("produtos");
+
+                for (JsonElement produtoElement : produtos) {
+                    JsonObject produtoJson = produtoElement.getAsJsonObject();
+                    String nome = produtoJson.get("nome").getAsString();
+                    int quantidade = produtoJson.get("quantidade").getAsInt();
+
+                    if (nome.equalsIgnoreCase(nomeProduto)) {
+                        if (quantidade < quantidadeCompra) {
+                            System.out.println("Estoque insuficiente para " + nomeProduto);
+                            return false;
+                        }
+
+                        produtoJson.addProperty("quantidade", quantidade - quantidadeCompra);
+                        DatabaseJSON.salvarLojas(lojas);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Produto não encontrado na loja.");
+        return false;
+    }
+
+
+
+
+
+
 }

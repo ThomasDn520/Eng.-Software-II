@@ -10,8 +10,6 @@ import java.util.List;
 
 public class LojaDAO {
 
-    // === CRUD COMPLETO ===
-
     public static int cadastrarLoja(String nome, String email, String senha, String cnpj) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
 

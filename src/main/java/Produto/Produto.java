@@ -10,6 +10,7 @@ public class Produto {
     private int quantidade;
     private String marca;
     private String descricao;
+    private String loja;
 
     public Produto(String nome, double valor, String tipo, int quantidade, String marca, String descricao) {
         this.id = UUID.randomUUID().toString();
@@ -35,4 +36,7 @@ public class Produto {
     public void setMarca(String marca) { this.marca = marca; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public String getLoja() { return loja; }
+    public void setLoja(String loja) { this.loja = loja; }
 }

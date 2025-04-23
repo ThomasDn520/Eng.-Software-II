@@ -1,8 +1,10 @@
 package Loja;
 
+import User.UserCliente;
 import User.UserLoja;
 
 import java.util.Scanner;
+import Produto.ProdutoSystem;
 
 public class LojaSystem {
 
@@ -50,6 +52,10 @@ public class LojaSystem {
         } else {
             System.out.println("Erro ao atualizar dados");
         }
+    }
+
+    public static void menuProdutos(UserLoja loja){
+        ProdutoSystem.iniciar(loja);
     }
 
 }
