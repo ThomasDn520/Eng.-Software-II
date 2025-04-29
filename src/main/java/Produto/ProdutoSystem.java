@@ -43,7 +43,7 @@ public class ProdutoSystem {
             }
         }
 
-        private static void cadastrarProduto(UserLoja loja) {
+        protected static void cadastrarProduto(UserLoja loja) {
             System.out.print("Nome: ");
             String nome = scanner.nextLine();
 
@@ -80,7 +80,7 @@ public class ProdutoSystem {
             System.out.println("Produto cadastrado com sucesso!");
         }
 
-        private static void listarProdutos(UserLoja loja) {
+        protected static void listarProdutos(UserLoja loja) {
             List<Produto> produtos = ProdutoDAO.listarProdutos(loja);
             if (produtos.isEmpty()) {
                 System.out.println("Nenhum produto cadastrado.");
@@ -95,14 +95,14 @@ public class ProdutoSystem {
             }
         }
 
-        private static void removerProduto(UserLoja loja) {
+        protected static void removerProduto(UserLoja loja) {
             listarProdutos(loja);
             System.out.print("Informe o nome do produto que deseja remover: ");
             String nome = scanner.nextLine();
             ProdutoDAO.removerProduto(loja, nome);
         }
 
-        private static void buscarProduto(UserLoja loja) {
+        protected static void buscarProduto(UserLoja loja) {
             System.out.print("Informe o nome do produto para buscar: ");
             String nome = scanner.nextLine();
             Produto produto = ProdutoDAO.buscarProduto(loja, nome);
