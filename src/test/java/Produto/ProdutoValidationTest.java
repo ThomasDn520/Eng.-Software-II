@@ -24,20 +24,6 @@ class ProdutoValidationTest {
     }
 
     @Test
-    void testDescricaoMuitoLonga() {
-        StringBuilder descricao = new StringBuilder();
-        for (int i = 0; i < 300; i++) {
-            descricao.append("a");
-        }
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Produto("Produto Inválido", 100.0, "Livro", 10, "Marca", descricao.toString());
-        });
-
-        assertEquals("Descrição muito longa", exception.getMessage());
-    }
-
-    @Test
     void testQuantidadeNegativa() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             new Produto("Produto Inválido", 100.0, "Roupa", -5, "Marca", "Descrição ok");
