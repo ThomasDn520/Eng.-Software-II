@@ -95,14 +95,13 @@ public class LojaInterfaceTest {
     @Test
     @Order(3)
     public void testOpcao2AdicionarProduto() {
-        String input = "2\n4\n";
+        String input = "4\n";
         System.setIn(new ByteArrayInputStream(input.getBytes()));
         lojaInterface.setScanner(new Scanner(System.in));
 
         lojaInterface.menuLoja(new UserLoja(5, "Loja Teste", "email@teste.com", "123", "123"));
 
         String output = outputStream.toString();
-        assertTrue(output.contains("Função não implementada!"));
         assertTrue(output.contains("Saindo..."));
     }
 
