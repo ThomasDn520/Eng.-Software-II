@@ -69,7 +69,7 @@ public class ClienteInterface {
             System.out.println("Carrinho de " + cliente.getNome() + "!");
             System.out.println("\n1. Exibir itens");
             System.out.println("2. Remover item");
-            System.out.println("3. Remover item");
+            System.out.println("3. Concluir compra");
             System.out.println("4. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
@@ -128,8 +128,10 @@ public class ClienteInterface {
         System.out.println("Qual produto voce deseja remover do carrinho?");
 
         do {
+            if(!ClienteSystem.exibirCarrinho(cliente)){
+                break;
+            }
             System.out.println("Produtos no carrinho");
-            ClienteSystem.exibirCarrinho(cliente);
 
             System.out.print("Digite um nome (ou um número para sair): ");
             String itemRemover = scanner.nextLine().trim();
@@ -169,16 +171,7 @@ public class ClienteInterface {
 
             switch (opcao) {
                 case 1:
-                    System.out.print("Nome: ");
-                    String nome = scanner.nextLine();
-                    System.out.print("E-mail: ");
-                    String email = scanner.nextLine();
-                    System.out.print("Senha: ");
-                    String senha = scanner.nextLine();
-                    System.out.print("CPF: ");
-                    String cpf = scanner.nextLine();
-
-                    clienteSystem.criarCliente(nome, email, senha, cpf);
+                    cadastrarCliente(scanner);
                     break;
                 case 2:
                     loginCliente();
@@ -210,6 +203,28 @@ public class ClienteInterface {
 
         } System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
 
+    }
+
+    private void cadastrarCliente(Scanner scanner) {
+        System.out.println("\nDigite 0 a qualquer momento para cancelar o cadastro.");
+
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        if (nome.equals("0")) return;
+
+        System.out.print("E-mail: ");
+        String email = scanner.nextLine();
+        if (email.equals("0")) return;
+
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+        if (senha.equals("0")) return;
+
+        System.out.print("CPF: ");
+        String cpf = scanner.nextLine();
+        if (cpf.equals("0")) return;
+
+        clienteSystem.criarCliente(nome, email, senha, cpf);
     }
 
 

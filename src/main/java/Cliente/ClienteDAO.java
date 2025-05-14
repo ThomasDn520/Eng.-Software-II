@@ -347,51 +347,58 @@ public class ClienteDAO {
             JsonObject clienteJson = element.getAsJsonObject();
             if (clienteJson.get("id").getAsInt() == cliente.getId()) {
 
-                if (clienteJson.has("carrinho")) {
-                    JsonObject carrinhoJson = clienteJson.getAsJsonObject("carrinho");
+                if (!clienteJson.has("carrinho")) {
+                    System.out.println("Carrinho não encontrado.");
+                    return false;
+                }
 
-                    if (carrinhoJson.has("itens")) {
-                        JsonArray itens = carrinhoJson.getAsJsonArray("itens");
-                        JsonArray novosItens = new JsonArray();
-                        boolean encontrado = false;
+                JsonObject carrinhoJson = clienteJson.getAsJsonObject("carrinho");
 
-                        for (JsonElement itemElement : itens) {
-                            JsonObject itemJson = itemElement.getAsJsonObject();
-                            String nome = itemJson.get("nome").getAsString();
+                if (!carrinhoJson.has("itens")) {
+                    System.out.println("Carrinho vazio.");
+                    return false;
+                }
 
-                            if (nome.equalsIgnoreCase(nomeProduto)) {
-                                encontrado = true;
-                                int quantidade = itemJson.get("quantidade").getAsInt();
+                JsonArray itens = carrinhoJson.getAsJsonArray("itens");
+                JsonArray novosItens = new JsonArray();
+                boolean encontrado = false;
 
-                                if (quantidade > 1) {
-                                    // Remove apenas uma unidade
-                                    itemJson.addProperty("quantidade", quantidade - 1);
-                                    novosItens.add(itemJson);
-                                }
-                                // Se quantidade == 1, não adiciona novamente (remove o item por completo)
-                            } else {
-                                novosItens.add(itemJson);
-                            }
+                for (JsonElement itemElement : itens) {
+                    JsonObject itemJson = itemElement.getAsJsonObject();
+                    String nome = itemJson.get("nome").getAsString();
+
+                    if (nome.equalsIgnoreCase(nomeProduto)) {
+                        encontrado = true;
+                        int quantidade = itemJson.get("quantidade").getAsInt();
+
+                        if (quantidade > 1) {
+                            // Remove apenas uma unidade
+                            itemJson.addProperty("quantidade", quantidade - 1);
+                            novosItens.add(itemJson);
                         }
-
-                        if (encontrado) {
-                            carrinhoJson.add("itens", novosItens);
-                            clienteJson.add("carrinho", carrinhoJson);
-                            DatabaseJSON.salvarClientes(clientes);
-                            System.out.println("Produto removido do carrinho.");
-                            return true;
-                        } else {
-                            System.out.println("Produto não encontrado no carrinho.");
-                            return false;
-                        }
+                        // Se quantidade == 1, não adiciona novamente (remove o item por completo)
+                    } else {
+                        novosItens.add(itemJson);
                     }
+                }
+
+                if (encontrado) {
+                    carrinhoJson.add("itens", novosItens);
+                    clienteJson.add("carrinho", carrinhoJson);
+                    DatabaseJSON.salvarClientes(clientes);
+                    System.out.println("Produto removido do carrinho.");
+                    return true;
+                } else {
+                    System.out.println("Produto não encontrado no carrinho.");
+                    return false;
                 }
             }
         }
 
-        System.out.println("Cliente não encontrado ou carrinho vazio.");
+        System.out.println("Cliente não encontrado.");
         return false;
     }
+
 
 
     public static boolean exibirHistoricoCompras(UserCliente cliente) {
