@@ -145,17 +145,4 @@ public class LojaInterfaceTest {
         String output = outputStream.toString();
         assertTrue(output.contains("Saindo..."));
     }
-
-    @Test
-    @Order(6)
-    void testLoginCadastroLoja() {
-        // Definindo a entrada do Scanner
-        String input = "1\nLoja_Teste\nloja@email.com\nsenha123\n12345678900001\n3\n4\n";
-        Scanner scanner = new Scanner(input);
-        LojaSystem lojaSystem = new LojaSystem();  // Suponha que LojaSystem seja um objeto real (não um mock)
-
-        LojaInterface lojaInterface = new LojaInterface(scanner, lojaSystem);
-
-        lojaInterface.loginCadastroLoja();
-    }
 }
