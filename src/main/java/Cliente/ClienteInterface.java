@@ -25,7 +25,8 @@ public class ClienteInterface {
             System.out.println("2. Carrinho de compras");
             System.out.println("3. Atualizar dados");
             System.out.println("4. Sair do sistema");
-            System.out.println("5. Historico de compras");
+            System.out.println("5. Histórico de compras");
+            System.out.println("6. Avaliar um produto");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -47,6 +48,9 @@ public class ClienteInterface {
                         break;
                     case 5:
                         historicoCliente(cliente);
+                        break;
+                    case 6:
+                        ClienteSystem.avaliarProduto(cliente, scanner);
                         break;
                     default:
                         System.out.println("Opção inválida, tente novamente.");

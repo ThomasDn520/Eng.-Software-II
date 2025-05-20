@@ -2,6 +2,7 @@ package Produto;
 
 import Database.DatabaseJSON;
 import User.UserLoja;
+import User.User;
 import com.google.gson.*;
 
 import java.sql.SQLException;
@@ -199,6 +200,61 @@ public class ProdutoDAO {
         }
 
         System.out.println("Produto não encontrado na loja.");
+        return false;
+    }
+
+
+
+    public static boolean adicionarAvaliacao(User usuario, String nomeLoja, String nomeProduto, int nota, String comentario) {
+        // 1. Validação da nota
+        if (nota < 1 || nota > 5) {
+            System.out.println("Nota inválida. Deve estar entre 1 e 5.");
+            return false;
+        }
+
+        // 2. Impede que lojas avaliem produtos
+        if (usuario instanceof UserLoja) {
+            System.out.println("Lojas não podem avaliar produtos.");
+            return false;
+        }
+
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement lojaElement : lojas) {
+            JsonObject lojaJson = lojaElement.getAsJsonObject();
+            String nomeDaLoja = lojaJson.get("nome").getAsString();
+
+            if (nomeDaLoja.equalsIgnoreCase(nomeLoja)) {
+                JsonArray produtos = lojaJson.getAsJsonArray("produtos");
+
+                for (JsonElement produtoElement : produtos) {
+                    JsonObject produtoJson = produtoElement.getAsJsonObject();
+
+                    if (produtoJson.get("nome").getAsString().equalsIgnoreCase(nomeProduto)) {
+                        // 3. Recupera ou inicializa o array de avaliações
+                        JsonArray avaliacoes = produtoJson.has("avaliacoes")
+                                ? produtoJson.getAsJsonArray("avaliacoes")
+                                : new JsonArray();
+
+                        // 4. Cria nova avaliação
+                        JsonObject avaliacaoJson = new JsonObject();
+                        avaliacaoJson.addProperty("usuario", usuario.getNome()); // opcional mas útil
+                        avaliacaoJson.addProperty("nota", nota);
+                        avaliacaoJson.addProperty("comentario", comentario == null ? "" : comentario);
+
+                        // 5. Adiciona e salva
+                        avaliacoes.add(avaliacaoJson);
+                        produtoJson.add("avaliacoes", avaliacoes);
+                        DatabaseJSON.salvarLojas(lojas);
+
+                        System.out.println("Avaliação adicionada com sucesso!");
+                        return true;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Produto ou loja não encontrados.");
         return false;
     }
 

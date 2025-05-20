@@ -123,4 +123,39 @@ public class ClienteSystem {
         return ClienteDAO.efetuarCompra(cliente, scanner);
     }
 
+    public static void avaliarProduto(UserCliente cliente, Scanner scanner) {
+        System.out.println("\n=== Avaliar Produto ===");
+
+        System.out.print("Nome da loja do produto: ");
+        String nomeLoja = scanner.nextLine().trim();
+
+        System.out.print("Nome do produto: ");
+        String nomeProduto = scanner.nextLine().trim();
+
+        int nota;
+        try {
+            System.out.print("Nota (1 a 5): ");
+            nota = Integer.parseInt(scanner.nextLine().trim());
+            if (nota < 1 || nota > 5) {
+                System.out.println("Nota inválida. A nota deve estar entre 1 e 5.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida para nota. Use apenas números de 1 a 5.");
+            return;
+        }
+
+        System.out.print("Comentário (opcional): ");
+        String comentario = scanner.nextLine().trim();
+
+        boolean sucesso = ProdutoDAO.adicionarAvaliacao(cliente, nomeLoja, nomeProduto, nota, comentario);
+
+        if (sucesso) {
+            System.out.println("Avaliação adicionada com sucesso!");
+        } else {
+            System.out.println("Erro ao adicionar avaliação. Verifique se o nome da loja e produto estão corretos.");
+        }
+    }
+
+
 }
