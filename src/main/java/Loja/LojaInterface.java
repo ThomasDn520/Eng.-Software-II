@@ -202,11 +202,11 @@ public class LojaInterface {
 
                 String conceito;
                 if (media < 2.0) {
-                    conceito = "Ruim";
+                    conceito = "Avaliação: Ruim";
                 } else if (media < 3.5) {
-                    conceito = "Médio";
+                    conceito = "Avaliação: Médio";
                 } else if (media < 4.5) {
-                    conceito = "Bom";
+                    conceito = "Avaliação: Bom";
                 } else {
                     conceito = "Excelente";
                 }
