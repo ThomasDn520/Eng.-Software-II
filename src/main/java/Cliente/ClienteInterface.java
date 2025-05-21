@@ -2,6 +2,7 @@ package Cliente;
 
 import User.User;
 import User.UserCliente;
+import Loja.LojaInterface;
 
 import java.util.Scanner;
 
@@ -24,9 +25,11 @@ public class ClienteInterface {
             System.out.println("\n1. Buscar itens");
             System.out.println("2. Carrinho de compras");
             System.out.println("3. Atualizar dados");
-            System.out.println("4. Sair do sistema");
-            System.out.println("5. Histórico de compras");
-            System.out.println("6. Avaliar um produto");
+            System.out.println("4. Histórico de compras");
+            System.out.println("5. Avaliar um produto");
+            System.out.println("6. Ver nota da loja");
+            System.out.println("7. Avaliar uma loja");
+            System.out.println("0. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -44,13 +47,21 @@ public class ClienteInterface {
                         clienteSystem.atualizarCliente(scanner, cliente);
                         break;
                     case 4:
-                        System.out.println("Saindo...");
-                        break;
-                    case 5:
                         historicoCliente(cliente);
                         break;
-                    case 6:
+                    case 5:
                         ClienteSystem.avaliarProduto(cliente, scanner);
+                        break;
+                    case 6:
+                        System.out.print("Digite o nome da loja para ver a nota: ");
+                        String nomeLoja = scanner.nextLine();
+                        LojaInterface.exibirNotaLoja(nomeLoja);
+                        break;
+                    case 7:
+                        avaliarLoja(cliente);
+                        break;
+                    case 0:
+                        System.out.println("Saindo...");
                         break;
                     default:
                         System.out.println("Opção inválida, tente novamente.");
@@ -230,6 +241,36 @@ public class ClienteInterface {
 
         clienteSystem.criarCliente(nome, email, senha, cpf);
     }
+
+    private void avaliarLoja(UserCliente cliente) {
+        System.out.print("Digite o nome da loja que deseja avaliar: ");
+        String nomeLoja = scanner.nextLine();
+
+        System.out.print("Digite uma nota para a loja (1 a 5): ");
+        int nota = 0;
+        try {
+            nota = Integer.parseInt(scanner.nextLine());
+            if (nota < 1 || nota > 5) {
+                System.out.println("Nota inválida. Deve ser entre 1 e 5.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida. Digite um número entre 1 e 5.");
+            return;
+        }
+
+        System.out.print("Digite um comentário (opcional): ");
+        String comentario = scanner.nextLine();
+
+        // Agora chama o método com 4 argumentos
+        boolean sucesso = ClienteSystem.avaliarLoja(cliente, nomeLoja, nota, comentario);
+        if (sucesso) {
+            System.out.println("Avaliação registrada com sucesso!");
+        } else {
+            System.out.println("Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
+        }
+    }
+
 
 
 

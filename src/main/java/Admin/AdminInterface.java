@@ -1,6 +1,7 @@
 package Admin;
 
 import User.UserAdmin;
+import Loja.LojaInterface;
 
 import java.util.Scanner;
 
@@ -26,12 +27,12 @@ public class AdminInterface {
             System.out.println("\n===== Painel do Administrador =====");
             System.out.println("1. Criar novo admin");
             System.out.println("2. Listar admins");
-            System.out.println("3. Sair");
-            System.out.println("4. Listar clientes");
-            System.out.println("5. Deletar clientes");
-            System.out.println("6. Listar lojas");
-            System.out.println("7. Deletar Lojas");
-            System.out.println("10. ");
+            System.out.println("3. Listar clientes");
+            System.out.println("4. Deletar clientes");
+            System.out.println("5. Listar lojas");
+            System.out.println("6. Deletar Lojas");
+            System.out.println("7. Ver nota da loja");
+            System.out.println("0. Sair");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -46,20 +47,25 @@ public class AdminInterface {
                         adminSystem.listarAdmins();
                         break;
                     case 3:
-                        continuar = false;
-                        System.out.println("Saindo...");
-                        break;
-                    case 4:
                         adminSystem.listarClientes();
                         break;
-                    case 5:
+                    case 4:
                         adminSystem.removerCliente(scanner);
                         break;
-                    case 6:
+                    case 5:
                         adminSystem.listarLojas();
                         break;
-                    case 7:
+                    case 6:
                         adminSystem.removerLoja(scanner);
+                        break;
+                    case 7:
+                        System.out.print("Digite o nome da loja para ver a nota: ");
+                        String nomeLoja = scanner.nextLine();
+                        LojaInterface.exibirNotaLoja(nomeLoja);
+                        break;
+                    case 0:
+                        continuar = false;
+                        System.out.println("Saindo...");
                         break;
                     default:
                         System.out.println("Opção inválida, tente novamente.");

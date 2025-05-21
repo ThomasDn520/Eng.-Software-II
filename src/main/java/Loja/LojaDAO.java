@@ -80,7 +80,6 @@ public class LojaDAO {
         return null; // Retorna null caso a loja não seja encontrada
     }
 
-
     public static UserLoja buscarPorCnpj(String cnpj) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
 
@@ -98,6 +97,19 @@ public class LojaDAO {
         }
         return null;
     }
+
+    public static boolean existeLoja(String nomeLoja) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement elemento : lojas) {
+            JsonObject loja = elemento.getAsJsonObject();
+            if (loja.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public static boolean removerLoja(String cnpj) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
@@ -134,12 +146,12 @@ public class LojaDAO {
         return todasLojas;
     }
 
-    // funcao de atualizar loja ainda nao esta funcionando completamente
+    // Atualiza loja, verificando se email não está duplicado
     public static boolean atualizar(UserLoja lojaAtualizada) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
         boolean encontrada = false;
 
-        // Verifica se novo email já existe (para outra loja)
+        // Verifica se novo email já existe para outra loja
         for (JsonElement element : lojas) {
             JsonObject l = element.getAsJsonObject();
             if (l.get("id").getAsInt() != lojaAtualizada.getId() &&
@@ -170,5 +182,83 @@ public class LojaDAO {
 
         System.out.println("Erro: Loja não encontrada");
         return false;
+    }
+
+    // Método para adicionar avaliação na loja
+    public static boolean adicionarAvaliacaoLoja(int idCliente, String nomeLoja, int nota, String comentario) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement elem : lojas) {
+            JsonObject loja = elem.getAsJsonObject();
+            if (loja.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
+
+                JsonArray avaliacoes;
+                if (loja.has("avaliacoes") && loja.get("avaliacoes").isJsonArray()) {
+                    avaliacoes = loja.getAsJsonArray("avaliacoes");
+                } else {
+                    avaliacoes = new JsonArray();
+                    loja.add("avaliacoes", avaliacoes);
+                }
+
+                JsonObject novaAvaliacao = new JsonObject();
+                novaAvaliacao.addProperty("idCliente", idCliente);
+                novaAvaliacao.addProperty("nota", nota);
+                novaAvaliacao.addProperty("comentario", comentario);
+
+                avaliacoes.add(novaAvaliacao);
+
+                // Salvar o JSON atualizado
+                DatabaseJSON.salvarLojas(lojas);
+
+                System.out.println("Avaliação adicionada com sucesso para a loja: " + nomeLoja);
+                return true;
+            }
+        }
+
+        System.out.println("Loja não encontrada para avaliação.");
+        return false; // Loja não encontrada
+    }
+
+    // Retorna nota média e conceito da loja
+    public static String obterNotaEConceitoLoja(String nomeLoja) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (JsonElement elemento : lojas) {
+            JsonObject lojaJson = elemento.getAsJsonObject();
+            if (lojaJson.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
+
+                if (!lojaJson.has("avaliacoes") || lojaJson.getAsJsonArray("avaliacoes").size() == 0) {
+                    return "Esta loja ainda não possui avaliações.";
+                }
+
+                JsonArray avaliacoes = lojaJson.getAsJsonArray("avaliacoes");
+                double soma = 0;
+                int quantidade = avaliacoes.size();
+
+                for (JsonElement elem : avaliacoes) {
+                    JsonObject avaliacao = elem.getAsJsonObject();
+                    soma += avaliacao.get("nota").getAsDouble();
+                }
+
+                double media = soma / quantidade;
+
+                String conceito;
+                if (media >= 4.5) {
+                    conceito = "Excelente";
+                } else if (media >= 3.5) {
+                    conceito = "Bom";
+                } else if (media >= 2.5) {
+                    conceito = "Regular";
+                } else if (media >= 1.5) {
+                    conceito = "Ruim";
+                } else {
+                    conceito = "Péssimo";
+                }
+
+                return String.format("Nota média: %.2f (%s)", media, conceito);
+            }
+        }
+
+        return "Loja não encontrada.";
     }
 }

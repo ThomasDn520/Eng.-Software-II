@@ -258,9 +258,17 @@ public class ProdutoDAO {
         return false;
     }
 
+    public static JsonArray buscarProdutosPorLoja(String nomeLoja) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
 
-
-
+        for (JsonElement element : lojas) {
+            JsonObject lojaJson = element.getAsJsonObject();
+            if (lojaJson.get("nome").getAsString().equalsIgnoreCase(nomeLoja) && lojaJson.has("produtos")) {
+                return lojaJson.getAsJsonArray("produtos");
+            }
+        }
+        return new JsonArray(); // Retorna vazio se não encontrar a loja
+    }
 
 
 }

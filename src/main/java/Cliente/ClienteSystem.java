@@ -1,9 +1,9 @@
 package Cliente;
 
-import User.User;
 import User.UserCliente;
 import Produto.Produto;
 import Produto.ProdutoDAO;
+import Loja.LojaDAO;
 
 import java.util.List;
 import java.util.Scanner;
@@ -11,10 +11,17 @@ import java.util.Scanner;
 public class ClienteSystem {
 
     public static void criarCliente(String nome, String email, String senha, String cpf) {
-        ClienteDAO.cadastrarCliente(nome, email, senha, cpf);
+        int id = ClienteDAO.cadastrarCliente(nome, email, senha, cpf);
+        if (id > 0) {
+            System.out.println("Cliente criado com sucesso! ID: " + id);
+        } else {
+            System.out.println("Erro ao criar cliente.");
+        }
     }
 
-    public static UserCliente autenticarCliente(String email, String senha){
+    public static UserCliente autenticarCliente(String email, String senha) {
+        // Ajuste: ClienteDAO.validarLogin deve retornar boolean ou UserCliente?
+        // Aqui assumo que validarLogin retorna boolean e buscarPorEmail retorna o objeto.
         if (ClienteDAO.validarLogin(email, senha)) {
             return ClienteDAO.buscarPorEmail(email);
         }
@@ -41,29 +48,26 @@ public class ClienteSystem {
         String cpf = scanner.nextLine().trim();
         if (cpf.isEmpty()) cpf = cliente.getCpf();
 
-        // Primeiro, atualiza o objeto cliente
         cliente.setNome(nome);
         cliente.setEmail(email);
         cliente.setSenha(senha);
         cliente.setCpf(cpf);
 
-        // Depois, salva no banco de dados
-        if(ClienteDAO.atualizar(cliente)){
+        if (ClienteDAO.atualizar(cliente)) {
             System.out.println("Dados do cliente atualizados com sucesso!");
         } else {
-            System.out.println("Erro ao atualizar dados.");
+            System.out.println("Erro ao atualizar dados. Talvez o e-mail já esteja em uso.");
         }
     }
 
     public static boolean buscarProdutoPorNome(UserCliente cliente, Scanner scanner, String nomeBusca) {
-
         Produto[] produtos = ProdutoDAO.buscarTodosProdutos();
         boolean encontrado = false;
 
         System.out.println("\n=== RESULTADOS DA BUSCA ===");
 
         for (Produto produto : produtos) {
-            if (produto.getNome().toLowerCase().contains(nomeBusca)) {
+            if (produto.getNome().toLowerCase().contains(nomeBusca.toLowerCase())) {
                 System.out.println("Nome: " + produto.getNome());
                 System.out.println("Loja: " + produto.getLoja());
                 System.out.println("Valor: R$" + produto.getValor());
@@ -73,53 +77,51 @@ public class ClienteSystem {
                 System.out.println("-----------------------------");
 
                 encontrado = true;
-
             }
         }
 
         if (!encontrado) {
             System.out.println("Nenhum produto encontrado.");
-            return encontrado;
-        } else{
-
-            System.out.println("\nDigite o nome e loja do produto para adiconar ao carrinho:");
-            System.out.println("Nome do produto: ");
-            String nomeProdutoBusca = scanner.nextLine().trim();
-            System.out.println("Nome da loja: ");
-            String nomeLojaBusca = scanner.nextLine().trim();
-
-            for (Produto produto : produtos){
-                if(produto.getNome().equalsIgnoreCase(nomeProdutoBusca) && produto.getLoja().equalsIgnoreCase(nomeLojaBusca)){
-                    ClienteDAO.adicionarProdutoAoCarrinho(cliente, produto, 1);
-                }
-            }
-
+            return false;
         }
-        return encontrado;
-    }
 
+        System.out.println("\nDigite o nome e loja do produto para adicionar ao carrinho:");
 
-    public static boolean exibirCarrinho(UserCliente cliente){
-        if(ClienteDAO.exibirItensCarrinho(cliente)){
-            return true;
-        }
-        return false;
-    }
+        System.out.print("Nome do produto: ");
+        String nomeProdutoBusca = scanner.nextLine().trim();
 
-    public static boolean removerProduto(UserCliente cliente, String itemRemover){
-        if(ClienteDAO.exibirItensCarrinho(cliente)){
-            if(ClienteDAO.removerProdutoDoCarrinho(cliente, itemRemover)){
+        System.out.print("Nome da loja: ");
+        String nomeLojaBusca = scanner.nextLine().trim();
+
+        for (Produto produto : produtos) {
+            if (produto.getNome().equalsIgnoreCase(nomeProdutoBusca) &&
+                    produto.getLoja().equalsIgnoreCase(nomeLojaBusca)) {
+                ClienteDAO.adicionarProdutoAoCarrinho(cliente, produto, 1);
+                System.out.println("Produto adicionado ao carrinho.");
                 return true;
             }
         }
+
+        System.out.println("Produto não encontrado para adição no carrinho.");
         return false;
     }
 
-    public static boolean exibirHistoricoCliente(UserCliente cliente){
+    public static boolean exibirCarrinho(UserCliente cliente) {
+        return ClienteDAO.exibirItensCarrinho(cliente);
+    }
+
+    public static boolean removerProduto(UserCliente cliente, String itemRemover) {
+        if (ClienteDAO.exibirItensCarrinho(cliente)) {
+            return ClienteDAO.removerProdutoDoCarrinho(cliente, itemRemover);
+        }
+        return false;
+    }
+
+    public static boolean exibirHistoricoCliente(UserCliente cliente) {
         return ClienteDAO.exibirHistoricoCompras(cliente);
     }
 
-    public static boolean efetuarCompra(UserCliente cliente, Scanner scanner){
+    public static boolean efetuarCompra(UserCliente cliente, Scanner scanner) {
         return ClienteDAO.efetuarCompra(cliente, scanner);
     }
 
@@ -156,6 +158,26 @@ public class ClienteSystem {
             System.out.println("Erro ao adicionar avaliação. Verifique se o nome da loja e produto estão corretos.");
         }
     }
+
+    public static boolean avaliarLoja(UserCliente cliente, String nomeLoja, int nota, String comentario) {
+        // Verifica se a loja existe
+        if (!LojaDAO.existeLoja(nomeLoja)) {
+            System.out.println("Loja não encontrada.");
+            return false;
+        }
+
+        // Adiciona avaliação da loja
+        boolean sucesso = LojaDAO.adicionarAvaliacaoLoja(cliente.getId(), nomeLoja, nota, comentario);
+
+        if (sucesso) {
+            System.out.println("Avaliação da loja adicionada com sucesso!");
+        } else {
+            System.out.println("Erro ao adicionar avaliação da loja.");
+        }
+
+        return sucesso;
+    }
+
 
 
 }

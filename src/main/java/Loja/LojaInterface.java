@@ -1,7 +1,15 @@
 package Loja;
 
 import User.UserLoja;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import Produto.ProdutoDAO;
+import Database.DatabaseJSON;
+
 import java.util.Scanner;
+
+import static Loja.LojaDAO.obterNotaEConceitoLoja;
 
 public class LojaInterface {
 
@@ -37,7 +45,7 @@ public class LojaInterface {
             System.out.println("\n1. Informações Loja");
             System.out.println("2. Gerenciar produtos");
             System.out.println("3. Atualizar dados");
-            System.out.println("4. Sair do sistema");
+            System.out.println("0. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
             if (scanner.hasNextInt()) {
@@ -46,7 +54,9 @@ public class LojaInterface {
 
                 switch (opcao) {
                     case 1:
-                        System.out.println("Função não implementada!");
+                        System.out.print("Digite o nome da loja para ver a nota: ");
+                        String nomeLoja = scanner.nextLine();
+                        LojaInterface.exibirNotaLoja(nomeLoja);
                         break;
                     case 2:
                         LojaSystem.menuProdutos(loja);
@@ -54,7 +64,7 @@ public class LojaInterface {
                     case 3:
                         LojaSystem.atualizarLoja(scanner, loja);
                         break;
-                    case 4:
+                    case 0:
                         continuar = false;
                         System.out.println("Saindo...");
                         break;
@@ -144,6 +154,69 @@ public class LojaInterface {
             }
         }
         System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
+    }
+
+    public static void exibirProdutosLojaComNota(String nomeLoja) {
+        System.out.println("Loja: " + nomeLoja);
+
+        // Exibe nota média + conceito da loja
+        String notaLoja = obterNotaEConceitoLoja(nomeLoja);
+        System.out.println(notaLoja);
+        System.out.println("----------------------------");
+
+        // Exibe produtos da loja
+        JsonArray produtos = ProdutoDAO.buscarProdutosPorLoja(nomeLoja);
+        if (produtos == null || produtos.size() == 0) {
+            System.out.println("Nenhum produto encontrado.");
+            return;
+        }
+
+        for (JsonElement elem : produtos) {
+            JsonObject produto = elem.getAsJsonObject();
+            System.out.println("Produto: " + produto.get("nome").getAsString());
+            System.out.println("Preço: R$ " + produto.get("valor").getAsDouble());
+            System.out.println("----------------------------");
+        }
+    }
+
+    public static void exibirNotaLoja(String nomeLoja) {
+        JsonArray lojas = DatabaseJSON.carregarLojas();
+
+        for (int i = 0; i < lojas.size(); i++) {
+            JsonObject loja = lojas.get(i).getAsJsonObject();
+            if (loja.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
+
+                if (!loja.has("avaliacoes") || loja.get("avaliacoes").getAsJsonArray().size() == 0) {
+                    System.out.println("Loja: " + nomeLoja);
+                    System.out.println("Esta loja não possui avaliações ainda.");
+                    return;
+                }
+
+                JsonArray avaliacoes = loja.getAsJsonArray("avaliacoes");
+                double somaNotas = 0;
+                for (int j = 0; j < avaliacoes.size(); j++) {
+                    JsonObject avaliacao = avaliacoes.get(j).getAsJsonObject();
+                    somaNotas += avaliacao.get("nota").getAsInt();
+                }
+                double media = somaNotas / avaliacoes.size();
+
+                String conceito;
+                if (media < 2.0) {
+                    conceito = "Ruim";
+                } else if (media < 3.5) {
+                    conceito = "Médio";
+                } else if (media < 4.5) {
+                    conceito = "Bom";
+                } else {
+                    conceito = "Excelente";
+                }
+
+                System.out.printf("Loja: %s%nNota média: %.2f (%s)%n", nomeLoja, media, conceito);
+                return;
+            }
+        }
+
+        System.out.println("Loja não encontrada.");
     }
 
 
