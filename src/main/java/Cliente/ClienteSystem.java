@@ -125,38 +125,17 @@ public class ClienteSystem {
         return ClienteDAO.efetuarCompra(cliente, scanner);
     }
 
-    public static void avaliarProduto(UserCliente cliente, Scanner scanner) {
-        System.out.println("\n=== Avaliar Produto ===");
-
-        System.out.print("Nome da loja do produto: ");
-        String nomeLoja = scanner.nextLine().trim();
-
-        System.out.print("Nome do produto: ");
-        String nomeProduto = scanner.nextLine().trim();
-
-        int nota;
-        try {
-            System.out.print("Nota (1 a 5): ");
-            nota = Integer.parseInt(scanner.nextLine().trim());
-            if (nota < 1 || nota > 5) {
-                System.out.println("Nota inválida. A nota deve estar entre 1 e 5.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Entrada inválida para nota. Use apenas números de 1 a 5.");
-            return;
-        }
-
-        System.out.print("Comentário (opcional): ");
-        String comentario = scanner.nextLine().trim();
-
+    public static boolean avaliarProduto(UserCliente cliente, String nomeLoja, String nomeProduto, int nota, String comentario) {
+        // Adiciona avaliação do produto
         boolean sucesso = ProdutoDAO.adicionarAvaliacao(cliente, nomeLoja, nomeProduto, nota, comentario);
 
         if (sucesso) {
-            System.out.println("Avaliação adicionada com sucesso!");
+            System.out.println("Avaliação do produto adicionada com sucesso!");
         } else {
-            System.out.println("Erro ao adicionar avaliação. Verifique se o nome da loja e produto estão corretos.");
+            System.out.println("Erro ao adicionar avaliação do produto.");
         }
+
+        return sucesso;
     }
 
     public static boolean avaliarLoja(UserCliente cliente, String nomeLoja, int nota, String comentario) {
@@ -178,6 +157,14 @@ public class ClienteSystem {
         return sucesso;
     }
 
-
-
+    /**
+     * Busca por informação da compra anterior
+     * @param detalhe O tipo de informação
+     * @param indice O índice da compra
+     * @param cliente O cliente que efetuou a compra
+     * @return A informação requerida ou null se não foi encontrada
+     */
+    public static String buscarDetalheCompra(String detalhe, int indice, UserCliente cliente) {
+        return ClienteDAO.buscarDetalheCompra(detalhe, indice, cliente);
+    }
 }

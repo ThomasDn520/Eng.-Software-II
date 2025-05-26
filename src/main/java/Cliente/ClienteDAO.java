@@ -399,8 +399,6 @@ public class ClienteDAO {
         return false;
     }
 
-
-
     public static boolean exibirHistoricoCompras(UserCliente cliente) {
 
         JsonArray clientes = DatabaseJSON.carregarClientes();
@@ -421,13 +419,17 @@ public class ClienteDAO {
                     System.out.println("Nenhuma compra realizada ainda.");
                 } else {
                     System.out.println("\nHistórico de Compras de " + cliente.getNome() + ":");
-                    for (JsonElement itemElement : historicoCompras) {
+                    // for (JsonElement itemElement : historicoCompras) {
+                    for(int i=0; i<historicoCompras.size(); i++) {
+                        JsonElement itemElement = historicoCompras.get(i);
                         JsonObject item = itemElement.getAsJsonObject();
                         String nomeProduto = item.get("produto").getAsString();
                         String nomeLoja = item.get("loja").getAsString();
                         int quantidade = item.get("quantidade").getAsInt();
                         double valor = item.get("valor").getAsDouble();
 
+
+                        System.out.println("<Compra Nº" + (i+1) + ">");
                         System.out.println("Produto: " + nomeProduto);
                         System.out.println("Loja: " + nomeLoja);
                         System.out.println("Quantidade: " + quantidade);
@@ -611,6 +613,25 @@ public class ClienteDAO {
         return false;
     }
 
+    /**
+     * Busca por informação da compra anterior
+     * @param detalhe O tipo de informação
+     * @param indice O índice da compra
+     * @param cliente O cliente que efetuou a compra
+     * @return A informação requerida ou null se não foi encontrada
+     */
+    public static String buscarDetalheCompra(String detalhe, int indice, UserCliente cliente) {
+        JsonArray clientes = DatabaseJSON.carregarClientes();
 
+        for(JsonElement element: clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if(clienteJson.get("id").getAsInt() == cliente.getId()) {
+                JsonArray compras = clienteJson.getAsJsonArray("historicoCompras");
+                JsonObject item = compras.get(indice).getAsJsonObject();
+                return item.get(detalhe).getAsString();
+            }
+        }
+        return null;
+    }
 }
 

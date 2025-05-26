@@ -3,7 +3,10 @@ package Cliente;
 import User.User;
 import User.UserCliente;
 import Loja.LojaInterface;
+import com.google.gson.JsonArray;
 
+import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ClienteInterface {
@@ -26,9 +29,7 @@ public class ClienteInterface {
             System.out.println("2. Carrinho de compras");
             System.out.println("3. Atualizar dados");
             System.out.println("4. Histórico de compras");
-            System.out.println("5. Avaliar um produto");
-            System.out.println("6. Ver nota da loja");
-            System.out.println("7. Avaliar uma loja");
+            System.out.println("5. Ver nota da loja");
             System.out.println("0. Sair do sistema");
             System.out.print("Escolha uma opção: ");
 
@@ -50,15 +51,9 @@ public class ClienteInterface {
                         historicoCliente(cliente);
                         break;
                     case 5:
-                        ClienteSystem.avaliarProduto(cliente, scanner);
-                        break;
-                    case 6:
                         System.out.print("Digite o nome da loja para ver a nota: ");
                         String nomeLoja = scanner.nextLine();
                         LojaInterface.exibirNotaLoja(nomeLoja);
-                        break;
-                    case 7:
-                        avaliarLoja(cliente);
                         break;
                     case 0:
                         System.out.println("Saindo...");
@@ -71,7 +66,7 @@ public class ClienteInterface {
                 scanner.next();
             }
 
-        } while (opcao != 4);
+        } while (opcao != 0);
     }
 
 
@@ -123,7 +118,7 @@ public class ClienteInterface {
         if(ClienteSystem.buscarProdutoPorNome(cliente, scanner, nomeBusca)){
             return true;
         }
-        else{
+        else {
             return false;
         }
     }
@@ -167,8 +162,67 @@ public class ClienteInterface {
         return false;
     }
 
-    public static boolean historicoCliente(UserCliente cliente){
-        return  ClienteSystem.exibirHistoricoCliente(cliente);
+    /**
+     * Apresenta o histórico de compras do cliente
+     * @param cliente
+     * @return false se ocorreu algum erro, senão true
+     */
+    public boolean historicoCliente(UserCliente cliente) {
+        int opcao = 0;
+        do {
+            if(!ClienteSystem.exibirHistoricoCliente(cliente)) {
+                return false;
+            }
+
+            System.out.println("Escolha o Nº da compra para mais opções, ou 0 (zero) para voltar: ");
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine();
+                if (opcao != 0)
+                    detalheCompra(cliente, opcao-1);
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Tente novamente.");
+            }
+        } while (opcao != 0);
+
+        System.out.println("Voltando ao menu do cliente...");
+        return true;
+    }
+
+    /**
+     * Apresenta as opções de uma compra anterior
+     * @param cliente O cliente logado
+     * @param indiceHistorico O número da compra
+     * @return false se ocorreu algum erro, senão true
+     */
+    public boolean detalheCompra(UserCliente cliente, int indiceHistorico) {
+        int opcao = 0;
+        do {
+            System.out.println("1. Avaliar produto");
+            System.out.println("2. Avaliar loja");
+            System.out.println("0. Voltar");
+            System.out.println("Escolha uma opcao: ");
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Tente novamente.");
+                continue;
+            }
+
+            switch(opcao) {
+                case 1:
+                    avaliarProduto(cliente, indiceHistorico);
+                    return true;
+                case 2:
+                    avaliarLoja(cliente, indiceHistorico);
+                    return true;
+                default:
+                    System.out.println("Opção inválida, tente novamente.");
+            }
+        } while (opcao != 0);
+
+        return true;
     }
 
 
@@ -242,9 +296,17 @@ public class ClienteInterface {
         clienteSystem.criarCliente(nome, email, senha, cpf);
     }
 
-    private void avaliarLoja(UserCliente cliente) {
-        System.out.print("Digite o nome da loja que deseja avaliar: ");
-        String nomeLoja = scanner.nextLine();
+    /**
+     * Efetua a avaliação de loja em uma compra
+     * @param cliente O cliente que efetuou a compra
+     * @param indiceCompra O índice da compra
+     */
+    private void avaliarLoja(UserCliente cliente, int indiceCompra) {
+        String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
+        if(nomeLoja == null) {
+            System.out.println("A compra Nº " + indiceCompra + " não existe.");
+            return;
+        }
 
         System.out.print("Digite uma nota para a loja (1 a 5): ");
         int nota = 0;
@@ -271,8 +333,43 @@ public class ClienteInterface {
         }
     }
 
+    /**
+     * Efetua a avaliação do produto em uma compra
+     * @param cliente O cliente que efetuou a compra
+     * @param indiceCompra O índice da compra
+     */
+    private void avaliarProduto(UserCliente cliente, int indiceCompra) {
+        String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
+        String nomeProduto = ClienteSystem.buscarDetalheCompra("produto", indiceCompra, cliente);
+        if(nomeLoja == null || nomeProduto == null) {
+            System.out.println("A compra Nº " + indiceCompra + " não existe.");
+            return;
+        }
 
+        System.out.print("Digite uma nota para o produto (1 a 5): ");
+        int nota = 0;
+        try {
+            nota = Integer.parseInt(scanner.nextLine());
+            if (nota < 1 || nota > 5) {
+                System.out.println("Nota inválida. Deve ser entre 1 e 5.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida. Digite uma avaliação entre 1 e 5.");
+            return;
+        }
 
+        System.out.print("Digite um comentário (opcional): ");
+        String comentario = scanner.nextLine();
+
+        // Agora chama o método com 4 argumentos
+        boolean sucesso = ClienteSystem.avaliarProduto(cliente, nomeLoja, nomeProduto, nota, comentario);
+        if (sucesso) {
+            System.out.println("Avaliação registrada com sucesso!");
+        } else {
+            System.out.println("Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
+        }
+    }
 
 }
 
