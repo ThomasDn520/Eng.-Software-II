@@ -18,6 +18,14 @@ public class ClienteInterface {
         this.clienteSystem = new ClienteSystem();
     }
 
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public void setClienteSystem(ClienteSystem clienteSystem) {
+        this.clienteSystem = clienteSystem;
+    }
+
     public void menuCliente(UserCliente cliente) {
         int opcao = 0;
 
@@ -301,7 +309,7 @@ public class ClienteInterface {
      * @param cliente O cliente que efetuou a compra
      * @param indiceCompra O índice da compra
      */
-    private void avaliarLoja(UserCliente cliente, int indiceCompra) {
+    protected void avaliarLoja(UserCliente cliente, int indiceCompra) {
         String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
         if(nomeLoja == null) {
             System.out.println("A compra Nº " + indiceCompra + " não existe.");
@@ -338,7 +346,7 @@ public class ClienteInterface {
      * @param cliente O cliente que efetuou a compra
      * @param indiceCompra O índice da compra
      */
-    private void avaliarProduto(UserCliente cliente, int indiceCompra) {
+    protected void avaliarProduto(UserCliente cliente, int indiceCompra) {
         String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
         String nomeProduto = ClienteSystem.buscarDetalheCompra("produto", indiceCompra, cliente);
         if(nomeLoja == null || nomeProduto == null) {

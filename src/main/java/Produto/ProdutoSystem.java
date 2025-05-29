@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ProdutoSystem {
 
-        private static final Scanner scanner = new Scanner(System.in);
+        protected static Scanner scanner = new Scanner(System.in);
 
         public static void iniciar(UserLoja loja) {
             while (true) {

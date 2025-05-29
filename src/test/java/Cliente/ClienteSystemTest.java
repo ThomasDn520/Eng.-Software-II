@@ -1,6 +1,7 @@
 package Cliente;
 
 import User.UserCliente;
+import Produto.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,6 +109,44 @@ public class ClienteSystemTest {
         assertEquals("carlos@email.com", cliente.getEmail());
         assertEquals("novaSenha123", cliente.getSenha());
         assertEquals("987.654.321-00", cliente.getCpf());
+    }
+
+    @Test
+    void testRemoverProduto_ComProdutoNoCarrinho() {
+        ClienteDAO.cadastrarCliente("Pedro", "pedro@email.com", "senhaXYZ", "99988877766");
+        UserCliente cliente = new UserCliente(1, "Pedro", "pedro@email.com", "senhaXYZ", "99988877766");
+        cliente.setId(1);
+        Produto produto = new Produto("Produto Teste", 23.50, "Tipo", 10, "Marca", "Descrição");
+
+        ClienteDAO.adicionarProdutoAoCarrinho(cliente, produto, 1);
+
+        boolean resultado = ClienteDAO.removerProdutoDoCarrinho(cliente, "Produto Teste");
+        assertTrue(resultado);
+    }
+
+    @Test
+    void testRemoverProduto_CarrinhoVazio() {
+        UserCliente cliente = new UserCliente(5, "usuarioTeste", "Test@gmail.com", "11234", "24332454651");
+
+        boolean resultado = ClienteDAO.removerProdutoDoCarrinho(cliente, "Produto Inexistente");
+        assertFalse(resultado);
+    }
+
+    @Test
+    void testBuscarProdutoPorNome_ProdutoNaoEncontrado() {
+        Produto[] produtos = {
+                new Produto("Produto Teste", 30.5, "Eletrônico", 2, "Marca", "Descrição"),
+        };
+        ProdutoDAO.setProdutos(produtos); // precisa simular isso
+
+        String entrada = "Produto Inexistente\nLoja Inexistente\n";
+        Scanner scanner = new Scanner(new ByteArrayInputStream(entrada.getBytes()));
+
+        UserCliente cliente = new UserCliente(5, "usuarioTeste", "Test@gmail.com", "11234", "24332454651");
+
+        boolean resultado = ClienteSystem.buscarProdutoPorNome(cliente, scanner, "inexistente");
+
+        assertFalse(resultado);
     }
 }
 

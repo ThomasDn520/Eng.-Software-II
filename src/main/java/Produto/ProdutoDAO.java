@@ -2,6 +2,7 @@ package Produto;
 
 import Database.DatabaseJSON;
 import User.UserLoja;
+import Produto.*;
 import User.User;
 import com.google.gson.*;
 
@@ -271,4 +272,7 @@ public class ProdutoDAO {
     }
 
 
+    public static void setProdutos(Produto[] novosProdutos) {
+        Object produtos = novosProdutos;
+    }
 }

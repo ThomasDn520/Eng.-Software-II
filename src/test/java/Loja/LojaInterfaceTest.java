@@ -145,4 +145,6 @@ public class LojaInterfaceTest {
         String output = outputStream.toString();
         assertTrue(output.contains("Saindo..."));
     }
+
+
 }

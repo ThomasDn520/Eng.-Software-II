@@ -14,6 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClienteInterfaceTest {
 
+    // Subclasse para testar e capturar chamada ao detalheCompra
+    static class TestableClienteInterface extends ClienteInterface {
+        public boolean detalheChamado = false;
+        public int indiceRecebido = -1;
+
+        @Override
+        public boolean detalheCompra(UserCliente cliente, int indiceHistorico) {
+            detalheChamado = true;
+            indiceRecebido = indiceHistorico;
+            return true;
+        }
+    }
+
     private ClienteSystem clienteSystem;
     private ClienteInterface clienteInterface;
     private UserCliente cliente;
@@ -54,7 +67,7 @@ class ClienteInterfaceTest {
     @Test
     void testMenuCliente() {
         // Simular entrada do usuário: opção 4 (sair do sistema)
-        String inputSimulado = "4\n";
+        String inputSimulado = "0\n";
         InputStream inputStreamOriginal = System.in;
         System.setIn(new ByteArrayInputStream(inputSimulado.getBytes()));
 
@@ -115,5 +128,85 @@ class ClienteInterfaceTest {
             System.setIn(systemInOriginal);  // restaura entrada original
         }
     }
+
+    @Test
+    void testDetalheCompra_AvaliarProduto() {
+        // Simula o input "1" para escolher avaliar produto
+        String input = "1\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        clienteInterface.scanner = new Scanner(in);
+
+        boolean resultado = clienteInterface.detalheCompra(cliente, 0);
+        assertTrue(resultado);
+        // Aqui pode-se verificar efeitos colaterais, se houverem
+    }
+
+    @Test
+    void testDetalheCompra_AvaliarLoja() {
+        // Simula o input "2" para escolher avaliar loja
+        String input = "2\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        clienteInterface.scanner = new Scanner(in);
+
+        boolean resultado = clienteInterface.detalheCompra(cliente, 0);
+        assertTrue(resultado);
+    }
+
+    @Test
+    void testDetalheCompra_EntradaInvalida() {
+        // Simula entrada inválida "abc", depois "0" para sair
+        String input = "abc\n0\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        clienteInterface.scanner = new Scanner(in);
+
+        boolean resultado = clienteInterface.detalheCompra(cliente, 0);
+        assertTrue(resultado);
+    }
+
+    @Test
+    void testDetalheCompra_OpcaoInvalida() {
+        // Simula opção inválida "9" depois "0" para sair
+        String input = "9\n0\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        clienteInterface.scanner = new Scanner(in);
+
+        boolean resultado = clienteInterface.detalheCompra(cliente, 0);
+        assertTrue(resultado);
+    }
+
+    @Test
+    void testAvaliarLoja_Sucesso() {
+        String input = "4\nComentário ok\n";
+        clienteInterface.scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
+
+        clienteInterface.avaliarLoja(cliente, 0);
+        // Não há retorno, só saída no console —
+        // para verificar a saída, teria que capturar System.out (opcional)
+    }
+
+    @Test
+    void testAvaliarLoja_CompraInexistente() {
+        String input = "";
+        clienteInterface.scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
+
+        clienteInterface.avaliarLoja(cliente, 99); // índice que retorna null para loja
+    }
+
+    @Test
+    void testAvaliarProduto_Sucesso() {
+        String input = "5\nComentário produto\n";
+        clienteInterface.scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
+
+        clienteInterface.avaliarProduto(cliente, 0);
+    }
+
+    @Test
+    void testAvaliarProduto_CompraInexistente() {
+        String input = "";
+        clienteInterface.scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
+
+        clienteInterface.avaliarProduto(cliente, 99);
+    }
+    
 }
 
