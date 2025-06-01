@@ -480,20 +480,46 @@ public class ClienteDAO {
     }
 
     public static boolean adicionarPontos(UserCliente cliente, int pontos) {
+        if (pontos <= 0) {
+            System.out.println("Nenhum ponto a ser adicionado.");
+            return false;
+        }
+
         JsonArray clientes = DatabaseJSON.carregarClientes();
+        boolean clienteEncontrado = false;
 
         for (JsonElement element : clientes) {
             JsonObject clienteJson = element.getAsJsonObject();
             if (clienteJson.get("id").getAsInt() == cliente.getId()) {
-                // Obtém os pontos atuais ou inicia com 0 se não existir
-                int pontosAtuais = clienteJson.has("pontos") ? clienteJson.get("pontos").getAsInt() : 0;
-                clienteJson.addProperty("pontos", pontosAtuais + pontos);
+                // Verifica se já existe campo de pontos
+                int pontosAtuais = 0;
+                if (clienteJson.has("pontos")) {
+                    try {
+                        pontosAtuais = clienteJson.get("pontos").getAsInt();
+                    } catch (Exception e) {
+                        System.err.println("Erro ao ler pontos existentes, iniciando de 0");
+                        pontosAtuais = 0;
+                    }
+                }
 
-                DatabaseJSON.salvarClientes(clientes);
-                return true;
+                // Atualiza os pontos
+                int novoTotal = pontosAtuais + pontos;
+                clienteJson.addProperty("pontos", novoTotal);
+                clienteEncontrado = true;
+                break;
             }
         }
-        return false;
+
+        if (clienteEncontrado) {
+            // Atualiza tanto no JSON quanto no objeto cliente
+            DatabaseJSON.salvarClientes(clientes);
+            cliente.setPontos(cliente.getPontos() + pontos); // Atualiza o objeto em memória
+            System.out.println(pontos + " pontos adicionados com sucesso!");
+            return true;
+        } else {
+            System.out.println("Cliente não encontrado para adicionar pontos.");
+            return false;
+        }
     }
 
     public static void exibirPontos(UserCliente cliente) {
@@ -523,6 +549,7 @@ public class ClienteDAO {
             return false;
         }
 
+        // Calcula o valor e os pontos ANTES de pedir confirmação
         double valorCompra = valorCarrinho(itens);
         int pontosGanhos = calcularPontos(valorCompra);
 
@@ -530,6 +557,7 @@ public class ClienteDAO {
         System.out.println("Você ganhará " + pontosGanhos + " pontos com esta compra!");
         System.out.print("Deseja confirmar a compra? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
+
         if (!confirmacao.equals("s")) {
             System.out.println("Compra cancelada.");
             return false;
@@ -556,13 +584,31 @@ public class ClienteDAO {
             }
         }
 
-        // Adicionar pontos ao cliente
+        // Adicionar pontos ao cliente (após confirmação)
         if (pontosGanhos > 0) {
-            adicionarPontos(cliente, pontosGanhos);
-            System.out.println("Parabéns! Você ganhou " + pontosGanhos + " pontos com esta compra!");
+            if (!adicionarPontos(cliente, pontosGanhos)) {
+                System.out.println("Compra concluída, mas houve um problema ao adicionar os pontos.");
+            } else {
+                System.out.println("Parabéns! Você ganhou " + pontosGanhos + " pontos com esta compra!");
+                cliente.setPontos(consultarPontos(cliente)); // Atualiza o objeto em memória
+            }
         }
 
         limparCarrinho(cliente);
+        return true;
+    }
+
+    public static boolean verificarConsistenciaPontos(UserCliente cliente) {
+        int pontosMemoria = cliente.getPontos();
+        int pontosArmazenados = consultarPontos(cliente);
+
+        if (pontosMemoria != pontosArmazenados) {
+            System.err.println("Inconsistência encontrada! Memória: " + pontosMemoria
+                    + " | Armazenado: " + pontosArmazenados);
+            // Corrige automaticamente
+            cliente.setPontos(pontosArmazenados);
+            return false;
+        }
         return true;
     }
 
