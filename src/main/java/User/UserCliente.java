@@ -34,6 +34,16 @@ public class UserCliente extends User {
             this.pontos = pontos;
         }
     }
+    public boolean podeReceberDesconto() {
+        return this.pontos >= 10;
+    }
+
+    public double calcularDesconto(double valorCompra) {
+        if (podeReceberDesconto()) {
+            return valorCompra * 0.10;
+        }
+        return 0;
+    }
 
     @Override
     public String toString() {

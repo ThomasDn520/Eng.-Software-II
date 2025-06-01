@@ -304,12 +304,29 @@ public class ClienteDAO {
                             System.out.println(nome + " (" + tipo + ")");
                             System.out.println("  Marca: " + marca);
                             System.out.println("  Descrição: " + descricao);
-                            System.out.println("  Valor: R$" + valor);
+                            System.out.println("  Valor unitário: R$" + valor);
                             System.out.println("  Quantidade: " + quantidade);
+                            System.out.println("  Subtotal: R$" + (valor * quantidade));
                             System.out.println("--------------------------");
                         }
 
-                        System.out.println("\nValor total do Carrinho: " + valorCarrinho(itens));
+                        double valorTotal = valorCarrinho(itens);
+                        int pontosCliente = consultarPontos(cliente);
+
+                        System.out.println("\nValor total do Carrinho: R$" + valorTotal);
+
+                        // Verificação e cálculo de desconto por pontos
+                        if (pontosCliente >= 10) {
+                            double desconto = valorTotal * 0.10;
+                            System.out.println("\nVocê tem " + pontosCliente + " pontos e pode ganhar 10% de desconto!");
+                            System.out.println("Desconto disponível: R$" + desconto);
+                            System.out.println("Valor com desconto: R$" + (valorTotal - desconto));
+                            System.out.println("(10 pontos serão usados se confirmar a compra)");
+                        } else {
+                            int pontosFaltantes = 10 - pontosCliente;
+                            System.out.println("\nPontos atuais: " + pontosCliente);
+                            System.out.println("Faltam " + pontosFaltantes + " pontos para ganhar 10% de desconto");
+                        }
 
                         return true;
 
@@ -549,15 +566,31 @@ public class ClienteDAO {
             return false;
         }
 
-        // Calcula o valor e os pontos ANTES de pedir confirmação
         double valorCompra = valorCarrinho(itens);
-        int pontosGanhos = calcularPontos(valorCompra);
+        double desconto = 0;
+        int pontosUsados = 0;
 
-        System.out.println("\nO valor total do carrinho é: " + valorCompra);
-        System.out.println("Você ganhará " + pontosGanhos + " pontos com esta compra!");
-        System.out.print("Deseja confirmar a compra? (s/n): ");
+        // Verifica e aplica desconto por pontos
+        int pontosDisponiveis = consultarPontos(cliente);
+        if (pontosDisponiveis >= 10) {
+            desconto = valorCompra * 0.10; // 10% de desconto
+            pontosUsados = 10;
+            System.out.println("\nDESCONTO DE 10% APLICADO! (por usar 10 pontos)");
+            System.out.println("Valor do desconto: R$" + desconto);
+        }
+
+        int pontosGanhos = calcularPontos(valorCompra - desconto); // Pontos calculados sobre valor com desconto
+
+        System.out.println("\nRESUMO DA COMPRA:");
+        System.out.println("Valor total dos produtos: R$" + valorCompra);
+        if (desconto > 0) {
+            System.out.println("Desconto aplicado: -R$" + desconto);
+        }
+        System.out.println("Valor final: R$" + (valorCompra - desconto));
+        System.out.println("Pontos que serão ganhos: " + pontosGanhos);
+
+        System.out.print("\nDeseja confirmar a compra? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
-
         if (!confirmacao.equals("s")) {
             System.out.println("Compra cancelada.");
             return false;
@@ -571,31 +604,49 @@ public class ClienteDAO {
             String lojaNome = itemJson.get("loja").getAsString();
             double valorProduto = itemJson.get("valor").getAsDouble();
 
-            // Atualiza o estoque da loja
             if (!ProdutoDAO.atualizarEstoqueLojaCompra(lojaNome, nomeProduto, quantidadeCompra)) {
                 System.out.println("Erro ao atualizar o estoque da loja.");
                 return false;
             }
 
-            // Adiciona o item ao histórico de compras do cliente
             if (!adicionarHistoricoCompra(cliente, nomeProduto, quantidadeCompra, lojaNome, valorProduto)) {
                 System.out.println("Erro ao adicionar item ao histórico de compras.");
                 return false;
             }
         }
 
-        // Adicionar pontos ao cliente (após confirmação)
+        // Atualizar pontos (subtrair usados e adicionar ganhos)
+        if (pontosUsados > 0) {
+            removerPontos(cliente, pontosUsados);
+        }
         if (pontosGanhos > 0) {
-            if (!adicionarPontos(cliente, pontosGanhos)) {
-                System.out.println("Compra concluída, mas houve um problema ao adicionar os pontos.");
-            } else {
-                System.out.println("Parabéns! Você ganhou " + pontosGanhos + " pontos com esta compra!");
-                cliente.setPontos(consultarPontos(cliente)); // Atualiza o objeto em memória
-            }
+            adicionarPontos(cliente, pontosGanhos);
         }
 
         limparCarrinho(cliente);
         return true;
+    }
+
+    public static boolean removerPontos(UserCliente cliente, int pontos) {
+        if (pontos <= 0) {
+            return false;
+        }
+
+        JsonArray clientes = DatabaseJSON.carregarClientes();
+
+        for (JsonElement element : clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                int pontosAtuais = clienteJson.has("pontos") ? clienteJson.get("pontos").getAsInt() : 0;
+                int novosPontos = Math.max(0, pontosAtuais - pontos); // Não permite pontos negativos
+
+                clienteJson.addProperty("pontos", novosPontos);
+                DatabaseJSON.salvarClientes(clientes);
+                cliente.setPontos(novosPontos); // Atualiza o objeto em memória
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean verificarConsistenciaPontos(UserCliente cliente) {
