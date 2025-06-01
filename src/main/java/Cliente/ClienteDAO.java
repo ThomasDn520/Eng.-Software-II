@@ -84,7 +84,6 @@ public class ClienteDAO {
         return null;
     }
 
-
     public static boolean validarLogin(String email, String senha) {
 
         JsonArray clientes = DatabaseJSON.carregarClientes();
@@ -99,7 +98,6 @@ public class ClienteDAO {
         }
         return false;
     }
-
 
     public static boolean atualizar(UserCliente cliente) {
         // Carrega todos os clientes
@@ -270,7 +268,6 @@ public class ClienteDAO {
         return false;
     }
 
-
     public static boolean exibirItensCarrinho(UserCliente cliente) {
         JsonArray clientes = DatabaseJSON.carregarClientes();
 
@@ -278,71 +275,69 @@ public class ClienteDAO {
             JsonObject clienteJson = element.getAsJsonObject();
             if (clienteJson.get("id").getAsInt() == cliente.getId()) {
 
-                if (clienteJson.has("carrinho")) {
-                    JsonObject carrinhoJson = clienteJson.getAsJsonObject("carrinho");
-
-                    if (carrinhoJson.has("itens")) {
-                        JsonArray itens = carrinhoJson.getAsJsonArray("itens");
-
-                        if (itens.size() == 0) {
-                            System.out.println("Carrinho vazio.");
-                            return false;
-                        }
-
-                        System.out.println("\nItens no carrinho:");
-
-                        for (JsonElement itemElement : itens) {
-                            JsonObject itemJson = itemElement.getAsJsonObject();
-
-                            String nome = itemJson.get("nome").getAsString();
-                            double valor = itemJson.get("valor").getAsDouble();
-                            String tipo = itemJson.get("tipo").getAsString();
-                            String marca = itemJson.get("marca").getAsString();
-                            String descricao = itemJson.get("descricao").getAsString();
-                            int quantidade = itemJson.get("quantidade").getAsInt();
-
-                            System.out.println(nome + " (" + tipo + ")");
-                            System.out.println("  Marca: " + marca);
-                            System.out.println("  Descrição: " + descricao);
-                            System.out.println("  Valor unitário: R$" + valor);
-                            System.out.println("  Quantidade: " + quantidade);
-                            System.out.println("  Subtotal: R$" + (valor * quantidade));
-                            System.out.println("--------------------------");
-                        }
-
-                        double valorTotal = valorCarrinho(itens);
-                        int pontosCliente = consultarPontos(cliente);
-
-                        System.out.println("\nValor total do Carrinho: R$" + valorTotal);
-
-                        // Verificação e cálculo de desconto por pontos
-                        if (pontosCliente >= 10) {
-                            double desconto = valorTotal * 0.10;
-                            System.out.println("\nVocê tem " + pontosCliente + " pontos e pode ganhar 10% de desconto!");
-                            System.out.println("Desconto disponível: R$" + desconto);
-                            System.out.println("Valor com desconto: R$" + (valorTotal - desconto));
-                            System.out.println("(10 pontos serão usados se confirmar a compra)");
-                        } else {
-                            int pontosFaltantes = 10 - pontosCliente;
-                            System.out.println("\nPontos atuais: " + pontosCliente);
-                            System.out.println("Faltam " + pontosFaltantes + " pontos para ganhar 10% de desconto");
-                        }
-
-                        return true;
-
-                    } else {
-                        System.out.println("Carrinho vazio.");
-                        return false;
-                    }
-
-                } else {
-                    System.out.println("Carrinho não encontrado");
+                // Verificação do carrinho
+                if (!clienteJson.has("carrinho")) {
+                    System.out.println("\n⚠️ Carrinho não encontrado");
                     return false;
                 }
+
+                JsonObject carrinhoJson = clienteJson.getAsJsonObject("carrinho");
+
+                // Verificação dos itens
+                if (!carrinhoJson.has("itens") || carrinhoJson.getAsJsonArray("itens").size() == 0) {
+                    System.out.println("\n🛒 Seu carrinho está vazio");
+                    return false;
+                }
+
+                JsonArray itens = carrinhoJson.getAsJsonArray("itens");
+
+                // Cabeçalho
+                System.out.println("\n════════ SEU CARRINHO ════════");
+                System.out.println("ITEM\t\tQTD\tVALOR UNIT.\tSUBTOTAL");
+                System.out.println("════════════════════════════════════");
+
+                // Listagem de itens
+                double valorTotal = 0;
+                for (JsonElement itemElement : itens) {
+                    JsonObject itemJson = itemElement.getAsJsonObject();
+
+                    String nome = itemJson.get("nome").getAsString();
+                    double valor = itemJson.get("valor").getAsDouble();
+                    int quantidade = itemJson.get("quantidade").getAsInt();
+                    double subtotal = valor * quantidade;
+                    valorTotal += subtotal;
+
+                    // Formatação para exibição alinhada
+                    String nomeFormatado = nome.length() > 15 ? nome.substring(0, 12) + "..." : nome;
+                    System.out.printf("%-15s\t%d\tR$%-9.2f\tR$%.2f%n",
+                            nomeFormatado, quantidade, valor, subtotal);
+                }
+
+                // Resumo
+                System.out.println("════════════════════════════════════");
+                System.out.printf("VALOR TOTAL: R$%.2f%n", valorTotal);
+
+                // Informações sobre pontos
+                int pontos = consultarPontos(cliente);
+                System.out.println("\n════════ SEUS PONTOS ════════");
+                System.out.println("PONTOS ATUAIS: " + pontos);
+
+                if (pontos >= 10) {
+                    double desconto = valorTotal * 0.10;
+                    System.out.printf("DESCONTO DISPONÍVEL: R$%.2f (10%%)%n", desconto);
+                    System.out.printf("VALOR COM DESCONTO: R$%.2f%n", valorTotal - desconto);
+                    System.out.println("(Serão debitados 10 pontos ao confirmar a compra)");
+                } else {
+                    int pontosFaltantes = 10 - pontos;
+                    System.out.println("Você precisa de mais " + pontosFaltantes +
+                            " pontos para obter 10% de desconto");
+                }
+
+                return true;
             }
         }
 
-        System.out.println("Cliente não encontrado.");
+        System.out.println("\n⛔ Cliente não encontrado");
         return false;
     }
 
@@ -421,51 +416,46 @@ public class ClienteDAO {
     }
 
     public static boolean exibirHistoricoCompras(UserCliente cliente) {
+        try {
+            JsonArray clientes = DatabaseJSON.carregarClientes();
 
-        JsonArray clientes = DatabaseJSON.carregarClientes();
+            for (JsonElement element : clientes) {
+                JsonObject clienteJson = element.getAsJsonObject();
+                if (clienteJson.get("id").getAsInt() == cliente.getId()) {
 
-        for (JsonElement element : clientes) {
-            JsonObject clienteJson = element.getAsJsonObject();
-            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                    JsonArray historico = clienteJson.has("historicoCompras")
+                            ? clienteJson.getAsJsonArray("historicoCompras")
+                            : new JsonArray();
 
-                JsonArray historicoCompras;
-                if (clienteJson.has("historicoCompras")) {
-                    historicoCompras = clienteJson.getAsJsonArray("historicoCompras");
-                } else {
-                    historicoCompras = new JsonArray();
-                    clienteJson.add("historicoCompras", historicoCompras);
-                }
-
-                if (historicoCompras.size() == 0) {
-                    System.out.println("Nenhuma compra realizada ainda.");
-                } else {
-                    System.out.println("\nHistórico de Compras de " + cliente.getNome() + ":");
-                    // for (JsonElement itemElement : historicoCompras) {
-                    for(int i=0; i<historicoCompras.size(); i++) {
-                        JsonElement itemElement = historicoCompras.get(i);
-                        JsonObject item = itemElement.getAsJsonObject();
-                        String nomeProduto = item.get("produto").getAsString();
-                        String nomeLoja = item.get("loja").getAsString();
-                        int quantidade = item.get("quantidade").getAsInt();
-                        double valor = item.get("valor").getAsDouble();
-
-
-                        System.out.println("<Compra Nº" + (i+1) + ">");
-                        System.out.println("Produto: " + nomeProduto);
-                        System.out.println("Loja: " + nomeLoja);
-                        System.out.println("Quantidade: " + quantidade);
-                        System.out.println("Valor: R$ " + valor);
-                        System.out.println("-----------------------------");
+                    if (historico.size() == 0) {
+                        System.out.println("\n📭 Nenhuma compra realizada");
+                        return true;
                     }
+
+                    System.out.println("\n════════ HISTÓRICO DE COMPRAS ════════");
+                    System.out.println("COMPRA\tPRODUTO\t\tLOJA\tVALOR\tQTD");
+                    System.out.println("══════════════════════════════════════");
+
+                    for (int i = 0; i < historico.size(); i++) {
+                        JsonObject compra = historico.get(i).getAsJsonObject();
+                        System.out.printf(
+                                "#%-6d%-12s\t%-8s\tR$%-7.2f%d%n",
+                                i+1,
+                                compra.get("produto").getAsString(),
+                                compra.get("loja").getAsString(),
+                                compra.get("valor").getAsDouble(),
+                                compra.get("quantidade").getAsInt()
+                        );
+                    }
+                    return true;
                 }
-
-                DatabaseJSON.salvarClientes(clientes);
-                return true;
             }
+            System.out.println("\n⛔ Cliente não encontrado");
+            return false;
+        } catch (Exception e) {
+            System.err.println("Erro ao exibir histórico: " + e.getMessage());
+            return false;
         }
-
-        System.out.println("Cliente não encontrado.");
-        return false;
     }
 
     public static boolean adicionarHistoricoCompra(UserCliente cliente, String nomeProduto, int quantidadeCompra, String nomeLoja, double valor) {
@@ -556,47 +546,61 @@ public class ClienteDAO {
         return 0;
     }
 
-
     public static boolean efetuarCompra(UserCliente cliente, Scanner scanner) {
+        // Exibe itens do carrinho
         exibirItensCarrinho(cliente);
         JsonArray itens = arrayItens(cliente);
 
+        // Validação de carrinho vazio
         if (itens == null || itens.size() <= 0) {
             System.out.println("Carrinho vazio. Não é possível realizar a compra.");
             return false;
         }
 
+        // Cálculos iniciais
         double valorCompra = valorCarrinho(itens);
         double desconto = 0;
-        int pontosUsados = 0;
-
-        // Verifica e aplica desconto por pontos
+        boolean usarPontos = false;
         int pontosDisponiveis = consultarPontos(cliente);
+
+        // Verificação e oferta de desconto por pontos
         if (pontosDisponiveis >= 10) {
-            desconto = valorCompra * 0.10; // 10% de desconto
-            pontosUsados = 10;
-            System.out.println("\nDESCONTO DE 10% APLICADO! (por usar 10 pontos)");
-            System.out.println("Valor do desconto: R$" + desconto);
+            System.out.print("\nVocê tem " + pontosDisponiveis + " pontos. Deseja usar 10 pontos para 10% de desconto? (s/n): ");
+            String resposta = scanner.nextLine().trim().toLowerCase();
+
+            if (resposta.equals("s")) {
+                desconto = Math.min(valorCompra * 0.10, valorCompra); // Garante que o desconto não exceda o valor total
+                usarPontos = true;
+                System.out.println("Desconto de R$" + desconto + " aplicado!");
+            }
         }
 
-        int pontosGanhos = calcularPontos(valorCompra - desconto); // Pontos calculados sobre valor com desconto
+        // Cálculo de pontos ganhos e valor final
+        double valorFinal = valorCompra - desconto;
+        int pontosGanhos = calcularPontos(valorFinal);
 
-        System.out.println("\nRESUMO DA COMPRA:");
-        System.out.println("Valor total dos produtos: R$" + valorCompra);
+        // Resumo detalhado da compra
+        System.out.println("\n═ RESUMO FINAL DA COMPRA ═");
+        System.out.println("Valor total dos produtos: R$" + String.format("%.2f", valorCompra));
         if (desconto > 0) {
-            System.out.println("Desconto aplicado: -R$" + desconto);
+            System.out.println("Desconto aplicado: -R$" + String.format("%.2f", desconto));
         }
-        System.out.println("Valor final: R$" + (valorCompra - desconto));
-        System.out.println("Pontos que serão ganhos: " + pontosGanhos);
+        System.out.println("Valor final a pagar: R$" + String.format("%.2f", valorFinal));
+        System.out.println("Pontos a serem ganhos: " + pontosGanhos);
+        System.out.println("Saldo atual de pontos: " + pontosDisponiveis);
+        if (usarPontos) {
+            System.out.println("Saldo após esta compra: " + (pontosDisponiveis - 10 + pontosGanhos));
+        }
 
-        System.out.print("\nDeseja confirmar a compra? (s/n): ");
+        // Confirmação final
+        System.out.print("\n╔ Deseja confirmar a compra? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
         if (!confirmacao.equals("s")) {
-            System.out.println("Compra cancelada.");
+            System.out.println("╚ Compra cancelada.");
             return false;
         }
 
-        // Processar cada item da compra
+        // Processamento dos itens
         for (JsonElement itemElement : itens) {
             JsonObject itemJson = itemElement.getAsJsonObject();
             String nomeProduto = itemJson.get("nome").getAsString();
@@ -615,22 +619,30 @@ public class ClienteDAO {
             }
         }
 
-        // Atualizar pontos (subtrair usados e adicionar ganhos)
-        if (pontosUsados > 0) {
-            removerPontos(cliente, pontosUsados);
+        // Atualização de pontos
+        if (usarPontos && !removerPontos(cliente, 10)) {
+            System.out.println("Erro ao subtrair pontos utilizados!");
+            return false;
         }
+
         if (pontosGanhos > 0) {
             adicionarPontos(cliente, pontosGanhos);
         }
 
+        // Finalização
         limparCarrinho(cliente);
+        System.out.println("╚ Compra finalizada com sucesso!");
+        if (usarPontos) {
+            System.out.println("  10 pontos foram debitados do seu saldo.");
+        }
+        System.out.println("  Pontos ganhos nesta compra: " + pontosGanhos);
+        System.out.println("  Novo saldo de pontos: " + consultarPontos(cliente));
+
         return true;
     }
 
     public static boolean removerPontos(UserCliente cliente, int pontos) {
-        if (pontos <= 0) {
-            return false;
-        }
+        if (pontos <= 0) return false;
 
         JsonArray clientes = DatabaseJSON.carregarClientes();
 
@@ -638,11 +650,11 @@ public class ClienteDAO {
             JsonObject clienteJson = element.getAsJsonObject();
             if (clienteJson.get("id").getAsInt() == cliente.getId()) {
                 int pontosAtuais = clienteJson.has("pontos") ? clienteJson.get("pontos").getAsInt() : 0;
-                int novosPontos = Math.max(0, pontosAtuais - pontos); // Não permite pontos negativos
+                int novosPontos = Math.max(0, pontosAtuais - pontos); // Não permite negativos
 
                 clienteJson.addProperty("pontos", novosPontos);
                 DatabaseJSON.salvarClientes(clientes);
-                cliente.setPontos(novosPontos); // Atualiza o objeto em memória
+                cliente.setPontos(novosPontos);
                 return true;
             }
         }
