@@ -44,6 +44,10 @@ public class ClienteDAO {
         return novoId;
     }
 
+    private static int calcularPontos(double valorCompra) {
+        return (int) (valorCompra / 50);
+    }
+
     public static UserCliente buscarPorCpf(String cpf) {
         JsonArray clientes = DatabaseJSON.carregarClientes();
 
@@ -475,6 +479,40 @@ public class ClienteDAO {
         return false;
     }
 
+    public static boolean adicionarPontos(UserCliente cliente, int pontos) {
+        JsonArray clientes = DatabaseJSON.carregarClientes();
+
+        for (JsonElement element : clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                // Obtém os pontos atuais ou inicia com 0 se não existir
+                int pontosAtuais = clienteJson.has("pontos") ? clienteJson.get("pontos").getAsInt() : 0;
+                clienteJson.addProperty("pontos", pontosAtuais + pontos);
+
+                DatabaseJSON.salvarClientes(clientes);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void exibirPontos(UserCliente cliente) {
+        int pontos = consultarPontos(cliente);
+        System.out.println("\n" + cliente.getNome() + ", você possui " + pontos + " pontos acumulados.");
+    }
+
+    public static int consultarPontos(UserCliente cliente) {
+        JsonArray clientes = DatabaseJSON.carregarClientes();
+
+        for (JsonElement element : clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                return clienteJson.has("pontos") ? clienteJson.get("pontos").getAsInt() : 0;
+            }
+        }
+        return 0;
+    }
+
 
     public static boolean efetuarCompra(UserCliente cliente, Scanner scanner) {
         exibirItensCarrinho(cliente);
@@ -486,8 +524,10 @@ public class ClienteDAO {
         }
 
         double valorCompra = valorCarrinho(itens);
+        int pontosGanhos = calcularPontos(valorCompra);
 
         System.out.println("\nO valor total do carrinho é: " + valorCompra);
+        System.out.println("Você ganhará " + pontosGanhos + " pontos com esta compra!");
         System.out.print("Deseja confirmar a compra? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
         if (!confirmacao.equals("s")) {
@@ -495,31 +535,12 @@ public class ClienteDAO {
             return false;
         }
 
+        // Processar cada item da compra
         for (JsonElement itemElement : itens) {
             JsonObject itemJson = itemElement.getAsJsonObject();
-
-            if (!itemJson.has("nome") || itemJson.get("nome").isJsonNull()) {
-                System.out.println("Erro: Nome do produto não encontrado.");
-                return false;
-            }
             String nomeProduto = itemJson.get("nome").getAsString();
-
-            if (!itemJson.has("quantidade") || itemJson.get("quantidade").isJsonNull()) {
-                System.out.println("Erro: Quantidade do produto não encontrada.");
-                return false;
-            }
             int quantidadeCompra = itemJson.get("quantidade").getAsInt();
-
-            if (!itemJson.has("loja") || itemJson.get("loja").isJsonNull()) {
-                System.out.println("Erro: Nome da loja não encontrado.");
-                return false;
-            }
             String lojaNome = itemJson.get("loja").getAsString();
-
-            if (!itemJson.has("valor") || itemJson.get("valor").isJsonNull()) {
-                System.out.println("Erro: Valor do produto não encontrado.");
-                return false;
-            }
             double valorProduto = itemJson.get("valor").getAsDouble();
 
             // Atualiza o estoque da loja
@@ -535,8 +556,13 @@ public class ClienteDAO {
             }
         }
 
-        limparCarrinho(cliente);
+        // Adicionar pontos ao cliente
+        if (pontosGanhos > 0) {
+            adicionarPontos(cliente, pontosGanhos);
+            System.out.println("Parabéns! Você ganhou " + pontosGanhos + " pontos com esta compra!");
+        }
 
+        limparCarrinho(cliente);
         return true;
     }
 
@@ -613,13 +639,6 @@ public class ClienteDAO {
         return false;
     }
 
-    /**
-     * Busca por informação da compra anterior
-     * @param detalhe O tipo de informação
-     * @param indice O índice da compra
-     * @param cliente O cliente que efetuou a compra
-     * @return A informação requerida ou null se não foi encontrada
-     */
     public static String buscarDetalheCompra(String detalhe, int indice, UserCliente cliente) {
         JsonArray clientes = DatabaseJSON.carregarClientes();
 
