@@ -46,24 +46,14 @@ public class Menu {
 
     /**
      * Construtor
-     * @param in Stream de entrada
-     * @param out Stream de saída
      */
-    private Menu(InputStream in, PrintStream out) {
+    public Menu() {
         this.opcoes = new ArrayList<>();
         this.cabecalhos = new ArrayList<>();
         this.rodapes = new ArrayList<>();
         this.promptSaida = "Sair";
         this.promptEntrada = "Digite uma opcao";
         this.geradorIndices = (i) -> String.format("%d. ", i);
-    }
-
-    /**
-     * Construtor padrão
-     * Usa entrada e saída padrão do sistema
-     */
-    public Menu() {
-        this(System.in, System.out);
     }
 
     /**
@@ -182,14 +172,6 @@ public class Menu {
     }
 
     /**
-     * Mostra esse menu usando a entrada e saída padrão do console
-     * <p>O menu será mostrado repetidamente até a opção "0" ser selecionada
-     */
-    public void mostrar() {
-        this.mostrar(System.in, System.out);
-    }
-
-    /**
      * Mostra esse menu
      * <p>O menu será mostrado repetidamente até a opção "0" ser selecionada
      */
@@ -211,6 +193,6 @@ public class Menu {
                 out.println("Entrada inválida! Tente novamente");
                 opcao = OPCAO_INVALIDA;
             }
-        } while(opcao != 0);
+        } while(opcao != SAIR);
     }
 }

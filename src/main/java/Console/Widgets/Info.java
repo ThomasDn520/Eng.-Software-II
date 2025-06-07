@@ -28,13 +28,6 @@ public class Info {
     }
 
     /**
-     * Mostra todas as linhas na saída padrão do console
-     */
-    public void mostrar() {
-        this.mostrar(System.out);
-    }
-
-    /**
      * Mostra todas as linhas
      * @param out Stream de saída
      */
@@ -42,5 +35,13 @@ public class Info {
         for(String linha: this.linhas) {
             out.println(linha);
         }
+    }
+
+    public static void mostrar(PrintStream out, String... linhas) {
+        Info info = new Info();
+        for(String linha: linhas) {
+            info.adicionarTexto(linha);
+        }
+        info.mostrar(out);
     }
 }

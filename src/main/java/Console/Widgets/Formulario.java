@@ -297,19 +297,6 @@ public class Formulario {
      *     <li>Perguntas e entradas do usuário.</li>
      * </ol>
      * Para cancelar a entrada de dados, basta responder a uma pergunta com uma string vazia
-     * @return true se o formulário foi completado, false se foi cancelado
-     */
-    public boolean mostrar() {
-        return this.mostrar(System.in, System.out);
-    }
-
-    /**
-     * Mostra esse formulário na seguinte ordem:
-     * <ol>
-     *     <li>Cabeçalhos;</li>
-     *     <li>Perguntas e entradas do usuário.</li>
-     * </ol>
-     * Para cancelar a entrada de dados, basta responder a uma pergunta com uma string vazia
      * @param in Stream de entrada de dados
      * @param out Stream de saída de dados
      * @return true se o formulário foi completado, false se foi cancelado
@@ -320,12 +307,12 @@ public class Formulario {
         for(String texto: this.cabecalhos)
             out.println(texto);
 
+        out.println();
         for(Map.Entry<String, EntradaUsuario> item: this.questoes.entrySet()) {
             EntradaUsuario questao = item.getValue();
             do {
                 try {
                     questao.perguntar(in, out);
-                    out.println();
                 } catch (InvalidInputException e) {
                     out.printf("%s Tente novamente\n", e.getMessage());
                 } catch (EmptyInputException e) { // quer cancelar a entrada, digite nada
@@ -334,6 +321,8 @@ public class Formulario {
                 }
             } while(questao.getResposta() == null);
         }
+
+        out.println();
         return true;
     }
 }
