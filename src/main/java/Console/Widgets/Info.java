@@ -37,6 +37,11 @@ public class Info {
         }
     }
 
+    /**
+     * Mostra esse bloco de informação na stream de saída
+     * @param out Stream de saída
+     * @param linhas Cada argumento é uma linha de texto do bloco de informação
+     */
     public static void mostrar(PrintStream out, String... linhas) {
         Info info = new Info();
         for(String linha: linhas) {
