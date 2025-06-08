@@ -1,73 +1,35 @@
-import Admin.AdminDAO;
 import Admin.AdminInterface;
-import Cliente.ClienteDAO;
 import Cliente.ClienteInterface;
-import Loja.LojaDAO;
+import Console.Widgets.Info;
+import Console.Widgets.Menu;
 import Loja.LojaInterface;
 import Database.DatabaseJSON;
 
-import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
 
+    public static void main(String[] args) {
+        // Inicialização das interfaces
         AdminInterface InterfaceAdm = new AdminInterface();
         ClienteInterface InterfaceCliente = new ClienteInterface();
         LojaInterface InterfaceLoja = new LojaInterface();
 
+        // configuração das bases de dados
         DatabaseJSON.inicializarJSON();
+        InterfaceAdm.criarAdmTeste();
 
-        // InterfaceAdm.criarAdmTeste();
-        // Rode esse pedaço código comentado apenas se não tiver criados adms no sistema
-        // Basta rodas uma vez e os adms serão armazenados no bd
+        // Menu principal
+        Menu menu = new Menu()
+                .adicionarCabecalho("==== Fazer Cadastro/Login como ====")
+                .adicionarOpcao("Admin", () -> InterfaceAdm.loginAdmin())
+                .adicionarOpcao("Loja", () -> InterfaceLoja.loginCadastroLoja())
+                .adicionarOpcao("Cliente", () -> InterfaceCliente.loginCadastroCliente())
+                .setPromptSaida("Sair do Sistema")
+                .setPromptEntrada("Escolha uma opção (0-3): ");
 
-        Scanner scanner = new Scanner(System.in);
+        menu.mostrar(System.in, System.out);
 
-        try {
-            while (true) {
-                menu();
-
-                System.out.print("Escolha uma opção (1-4): ");
-                if (scanner.hasNextInt()) {
-                    int opcao = scanner.nextInt();
-                    scanner.nextLine();
-
-                    switch (opcao) {
-                        case 1:
-                            InterfaceAdm.loginAdmin();
-                            break;
-                        case 2:
-                            InterfaceLoja.loginCadastroLoja();
-                            break;
-                        case 3:
-                            InterfaceCliente.loginCadastroCliente();
-                            break;
-                        case 4:
-                            System.out.println("Encerrando o sistema...");
-                            scanner.close();
-                            return;  // Encerra o programa corretamente
-                        case 5:
-                            InterfaceAdm.loginAdmin();
-                        default:
-                            System.out.println("Opção inválida! Digite um número entre 1 e 4.");
-                    }
-                } else {
-                    System.out.println("Entrada inválida! Digite um número entre 1 e 4.");
-                    scanner.next(); // Consumir entrada inválida
-                }
-            }
-        } catch (IllegalStateException e) {
-            System.out.println("Erro: " + e.getMessage());
-        } finally {
-            scanner.close(); // Garante que o scanner será fechado
-        }
+        Info.mostrar(System.out, "Encerrando o sistema...");
     }
 
-    public static void menu() {
-        System.out.println("\n==== Fazer Cadastro/Login como ====");
-        System.out.println("1 - Admin");
-        System.out.println("2 - Loja");
-        System.out.println("3 - Cliente");
-        System.out.println("4 - Sair do Sistema");
-    }
 }

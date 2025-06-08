@@ -1,5 +1,8 @@
 package Loja;
 
+import Console.Widgets.Formulario;
+import Console.Widgets.Info;
+import Console.Widgets.Menu;
 import User.UserLoja;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -7,25 +10,34 @@ import com.google.gson.JsonObject;
 import Produto.ProdutoDAO;
 import Database.DatabaseJSON;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 import static Loja.LojaDAO.obterNotaEConceitoLoja;
 
 public class LojaInterface {
+    private final InputStream entrada;
+    private final PrintStream saida;
 
     private Scanner scanner = new Scanner(System.in);
     LojaSystem lojaSystem;
 
     // Modificado para aceitar um Scanner externo
     public LojaInterface() {
+        this(System.in, System.out, new Scanner(System.in), new LojaSystem());
+    }
+
+    public LojaInterface(InputStream entrada, PrintStream saida, Scanner scanner, LojaSystem lojaSystem) {
+        this.entrada = entrada;
+        this.saida = saida;
         this.scanner = scanner;
-        this.lojaSystem = new LojaSystem();
+        this.lojaSystem = lojaSystem;
     }
 
     // Novo construtor para testes
     public LojaInterface(Scanner scanner, LojaSystem lojaSystem) {
-        this.scanner = scanner;
-        this.lojaSystem = lojaSystem; // Usa mock no teste
+        this(System.in, System.out, scanner, lojaSystem); // Usa mock no teste
     }
 
     public void setScanner(Scanner scanner) {
@@ -37,149 +49,106 @@ public class LojaInterface {
     }
 
     public void menuLoja(UserLoja loja) {
-        boolean continuar = true;
-        while (continuar) {
-            System.out.println("\n===== Painel da Loja =====");
-            System.out.println("Bem vindo, " + loja.getNome() + "!");
+        Menu menu = new Menu()
+            .adicionarCabecalho("===== Painel da Loja =====")
+            .adicionarCabecalho("Bem vindo, " + loja.getNome() + "!")
+            .adicionarOpcao("Informações Loja", () -> exibirNotaLoja(loja.getNome()))
+            .adicionarOpcao("Gerenciar produtos", () -> LojaSystem.menuProdutos(loja))
+            .adicionarOpcao("Atualizar dados", () -> LojaSystem.atualizarLoja(scanner, loja))
+            .setPromptSaida("Logout")
+            .setPromptEntrada("Escolha uma opção (0-3): ");
 
-            System.out.println("\n1. Informações Loja");
-            System.out.println("2. Gerenciar produtos");
-            System.out.println("3. Atualizar dados");
-            System.out.println("0. Sair do sistema");
-            System.out.print("Escolha uma opção: ");
-
-            if (scanner.hasNextInt()) {
-                int opcao = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (opcao) {
-                    case 1:
-                        System.out.print("Digite o nome da loja para ver a nota: ");
-                        String nomeLoja = scanner.nextLine();
-                        LojaInterface.exibirNotaLoja(nomeLoja);
-                        break;
-                    case 2:
-                        LojaSystem.menuProdutos(loja);
-                        break;
-                    case 3:
-                        LojaSystem.atualizarLoja(scanner, loja);
-                        break;
-                    case 0:
-                        continuar = false;
-                        System.out.println("Saindo...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida, tente novamente.");
-                }
-            } else {
-                System.out.println("Entrada inválida! Digite um número.");
-                scanner.next();
-            }
-        }
+        menu.mostrar(this.entrada, this.saida);
     }
 
     public void loginCadastroLoja() {
-        int tentativas = 0;
-        while (tentativas < 5) { // Limita as tentativas para evitar loop infinito
-            System.out.println("\n==== LOGIN/CADASTRO Loja ====");
-            System.out.println("1. Cadastrar Loja");
-            System.out.println("2. Fazer Login");
-            System.out.println("3. Voltar ao Menu Principal");
-            System.out.print("Escolha uma opção (1-3): ");
+        // TODO: Caso repetisse muitas opções inválidas, retorna para o menu principal
+        Menu menu = new Menu()
+            .adicionarCabecalho("==== LOGIN/CADASTRO Loja ====")
+                .adicionarOpcao("Fazer Login", () -> loginLoja())
+                .adicionarOpcao("Cadastrar Loja", () -> cadastroLoja())
+                .setPromptSaida("Voltar ao Menu Principal")
+                .setPromptEntrada("Escolha uma opção (0-2): ");
 
-            if (scanner.hasNextInt()) {
-                int opcao = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (opcao) {
-                    case 1:
-                        System.out.print("Nome: ");
-                        String nome = scanner.nextLine();
-                        System.out.print("E-mail: ");
-                        String email = scanner.nextLine();
-                        System.out.print("Senha: ");
-                        String senha = scanner.nextLine();
-                        System.out.print("CNPJ: ");
-                        String cnpj = scanner.nextLine();
-
-                        LojaSystem.criarLoja(nome, email, senha, cnpj);
-                        break;
-                    case 2:
-                        loginLoja();
-                        break;
-                    case 3:
-                        return;
-                    default:
-                        System.out.println("Opção inválida, tente novamente.");
-                        tentativas++;
-                        if (tentativas >= 5) {
-                            System.out.println("Muitas tentativas inválidas. Retornando ao menu inicial.");
-                            return; // Sai do loop após muitas tentativas erradas
-                        }
-                }
-            } else {
-                System.out.println("Entrada inválida! Digite um número.");
-                scanner.next(); // Descarta a entrada errada
-                tentativas++;
-            }
-        }
+        menu.mostrar(this.entrada, this.saida);
     }
 
+    private void cadastroLoja() {
+        Formulario formulario = new Formulario()
+            .adicionarCabecalho("Informe os dados da loja a ser cadastrada")
+            .adicionarCabecalho("Para cancelar, pressione <Enter> sem informar dados.")
+            .perguntarLoja("nome", "Nome: ")
+            .perguntarEmail("email", "E-mail: ")
+            .perguntarSenha("senha", "Senha: ")
+            .perguntarCNPJ("cnpj", "CNPJ: ");
+
+        if(!formulario.mostrar(this.entrada, this.saida))
+            return;
+
+        String nome = formulario.getTexto("nome");
+        String email = formulario.getTexto("email");
+        String senha = formulario.getTexto("senha");
+        String cnpj = formulario.getTexto("cnpj");
+
+        LojaSystem.criarLoja(nome, email, senha, cnpj);
+    }
 
     public void loginLoja() {
         int tentativas = 0;
-        scanner.nextLine();
+
         while (tentativas < 5) {
-            System.out.println("Tentativa: " + tentativas);
+            Formulario formulario = new Formulario()
+                .adicionarCabecalho("Tentativa: " + tentativas)
+                .perguntarEmail("email", "E-mail: ")
+                .perguntarSenha("senha", "Senha: ");
 
-            System.out.print("E-mail: ");
-            String email = scanner.nextLine();
-            System.out.println("Email recebido: " + email); // <-- Debug
+            if(!formulario.mostrar(this.entrada, this.saida))
+                return;
 
-            System.out.print("Senha: ");
-            String senha = scanner.nextLine();
-            System.out.println("Senha recebida: " + senha); // <-- Debug
-
-
+            String email = formulario.getTexto("email");
+            String senha = formulario.getTexto("senha");
 
             UserLoja loja = lojaSystem.autenticarLoja(email, senha);
 
             if (loja != null) {
-                System.out.println("Login bem-sucedido!"); // <-- Debug
+                Info.mostrar(this.saida, "Login bem-sucedido!"); // <-- Debug
                 menuLoja(loja);
                 return;
             } else {
-                System.out.println("Email ou senha incorretos!");
+                Info.mostrar(this.saida, "Email ou senha incorretos!");
                 tentativas++;
             }
         }
-        System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
+
+        Info.mostrar(this.saida, "Número de tentativas excedido. Retornando ao menu inicial...");
     }
 
-    public static void exibirProdutosLojaComNota(String nomeLoja) {
-        System.out.println("Loja: " + nomeLoja);
+    public void exibirProdutosLojaComNota(String nomeLoja) {
+        Info.mostrar(this.saida, "Loja: " + nomeLoja);
 
         // Exibe nota média + conceito da loja
         String notaLoja = obterNotaEConceitoLoja(nomeLoja);
-        System.out.println(notaLoja);
-        System.out.println("----------------------------");
+        Info.mostrar(this.saida,
+                notaLoja,
+                "----------------------------");
 
         // Exibe produtos da loja
         JsonArray produtos = ProdutoDAO.buscarProdutosPorLoja(nomeLoja);
         if (produtos == null || produtos.size() == 0) {
-            System.out.println("Nenhum produto encontrado.");
+            Info.mostrar(this.saida, "Nenhum produto encontrado.");
             return;
         }
 
         for (JsonElement elem : produtos) {
             JsonObject produto = elem.getAsJsonObject();
-            System.out.println("Produto: " + produto.get("nome").getAsString());
-            System.out.println("Preço: R$ " + produto.get("valor").getAsDouble());
-            System.out.println("----------------------------");
+            Info.mostrar(this.saida,
+                    "Produto: " + produto.get("nome").getAsString(),
+                    "Preço: R$ " + produto.get("valor").getAsDouble(),
+                    "----------------------------");
         }
     }
 
-    public static void exibirNotaLoja(String nomeLoja) {
+    public void exibirNotaLoja(String nomeLoja) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
 
         for (int i = 0; i < lojas.size(); i++) {
@@ -187,8 +156,9 @@ public class LojaInterface {
             if (loja.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
 
                 if (!loja.has("avaliacoes") || loja.get("avaliacoes").getAsJsonArray().size() == 0) {
-                    System.out.println("Loja: " + nomeLoja);
-                    System.out.println("Esta loja não possui avaliações ainda.");
+                    Info.mostrar(this.saida,
+                            "Loja: " + nomeLoja,
+                            "Esta loja não possui avaliações ainda.");
                     return;
                 }
 
@@ -211,13 +181,12 @@ public class LojaInterface {
                     conceito = "Excelente";
                 }
 
-                System.out.printf("Loja: %s%nNota média: %.2f (%s)%n", nomeLoja, media, conceito);
+                String resultado = String.format("Loja: %s%nNota média: %.2f (%s)%n", nomeLoja, media, conceito);
+                Info.mostrar(this.saida, resultado);
                 return;
             }
         }
 
-        System.out.println("Loja não encontrada.");
+        Info.mostrar(this.saida, "Loja não encontrada.");
     }
-
-
 }

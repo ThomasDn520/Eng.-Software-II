@@ -1,112 +1,134 @@
 package Admin;
 
+import Console.Widgets.Formulario;
+import Console.Widgets.Info;
+import Console.Widgets.Menu;
+import Loja.LojaSystem;
 import User.UserAdmin;
 import Loja.LojaInterface;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Scanner;
 
+// TODO
+//  1. [OK] Adicionar System.in e System.out nos argumentos e na instância (facilita os testes!)
+//  2. [OK] Fazer métodos .mostrar() usar a stream de entrada (System.in) da instância
+//  2. [OK] Fazer métodos .mostrar() usar a stream de saída (System.out) da instância
+//  3. Não deve existir nenhum Scanner, System.out.print no código
+//  4. Se alguma coisa usar System.in, System.out ou Scanner, então deveria ficar aqui!!!
+//  5. Não deve haver nenhum System.print... ou Scanner.next... em nenhuma classe, exceto as do módulo <Console>
+/**
+ * Classe interface de administrador
+ */
 public class AdminInterface {
+    private final InputStream entrada;
+    private final PrintStream saida;
 
     private Scanner scanner = new Scanner(System.in);
     private AdminSystem adminSystem;
 
+    /**
+     * Interface de usuário com as funções administrativas do sistema
+     * Essa interface usará a saída e entrada padrão do console ({@code System.in} e {@code System.out})
+     */
     public AdminInterface() {
+        this(System.in, System.out);
+    }
+
+    /**
+     * Interface de usuário com as funções administrativas do sistema
+     * @param saida Stream de saída na qual as informações serão mostradas
+     * @param entrada Stream de entrada pela qual o sistema recebe os dados
+     */
+    public AdminInterface(InputStream entrada, PrintStream saida) {
+        this.saida = saida;
+        this.entrada = entrada;
         this.adminSystem = new AdminSystem();
     }
 
-
+    // TODO: Renomear para criarAdmPadrao
+    //  talvez renomear os admins para alguma coisa mais única, como "master", "admin-mestre" ou "root"
     public void criarAdmTeste() {
-        adminSystem.criarAdminDiretamente("Admin1", "admin1@email.com", "123");
-        adminSystem.criarAdminDiretamente("Admin2", "admin2@email.com", "123");
+        adminSystem.criarAdminDiretamente("Admin1", "admin1@email.com", "12345678");
+        adminSystem.criarAdminDiretamente("Admin2", "admin2@email.com", "12345678");
     }
 
-
+    // TODO: Remover argumento ou adicionar níveis de privilégio
+    /**
+     * Mostra o menu principal do administrador para interação
+     * @param admin O administrador logado
+     */
     public void menuAdmin(UserAdmin admin) {
-        boolean continuar = true;
-        while (continuar) {
-            System.out.println("\n===== Painel do Administrador =====");
-            System.out.println("1. Criar novo admin");
-            System.out.println("2. Listar admins");
-            System.out.println("3. Listar clientes");
-            System.out.println("4. Deletar clientes");
-            System.out.println("5. Listar lojas");
-            System.out.println("6. Deletar Lojas");
-            System.out.println("7. Ver nota da loja");
-            System.out.println("0. Sair");
-            System.out.print("Escolha uma opção: ");
+        Menu menu = new Menu()
+                .setPromptEntrada("===== Painel do Administrador =====")
+                .adicionarOpcao("Criar novo admin", () -> AdminSystem.criarAdmin(scanner))
+                .adicionarOpcao("Listar admins", () -> adminSystem.listarAdmins())
+                .adicionarOpcao("Listar clientes", () -> adminSystem.listarClientes())
+                .adicionarOpcao("Deletar clientes", () -> adminSystem.removerCliente(scanner))
+                .adicionarOpcao("Listar lojas", () -> adminSystem.listarLojas())
+                .adicionarOpcao("Deletar lojas", () -> adminSystem.removerLoja(scanner))
+                .adicionarOpcao("Ver nota da loja", () -> {
+                    Formulario f = new Formulario()
+                        .perguntarLoja("loja", "Digite o nome da loja para ver a nota: ");
+                    if(!f.mostrar(System.in, System.out))
+                        return;
+                    String nomeLoja = f.getTexto("loja");
+                    // FIXME: Melhorar linha abaixo
+                    new LojaInterface(this.entrada, this.saida, this.scanner, new LojaSystem())
+                            .exibirNotaLoja(nomeLoja);
+                })
+                .setPromptSaida("Logout")
+                .setPromptEntrada("Escolha uma opção (0-7): ");
 
-            if (scanner.hasNextInt()) {
-                int opcao = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (opcao) {
-                    case 1:
-                        adminSystem.criarAdmin(scanner);
-                        break;
-                    case 2:
-                        adminSystem.listarAdmins();
-                        break;
-                    case 3:
-                        adminSystem.listarClientes();
-                        break;
-                    case 4:
-                        adminSystem.removerCliente(scanner);
-                        break;
-                    case 5:
-                        adminSystem.listarLojas();
-                        break;
-                    case 6:
-                        adminSystem.removerLoja(scanner);
-                        break;
-                    case 7:
-                        System.out.print("Digite o nome da loja para ver a nota: ");
-                        String nomeLoja = scanner.nextLine();
-                        LojaInterface.exibirNotaLoja(nomeLoja);
-                        break;
-                    case 0:
-                        continuar = false;
-                        System.out.println("Saindo...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida, tente novamente.");
-                }
-            } else {
-                System.out.println("Entrada inválida! Digite um número.");
-                scanner.next();
-            }
-        }
+        menu.mostrar(this.entrada, this.saida);
     }
 
+    /**
+     * Apresenta a página para login do administrador
+     * Serão permitidas no máximo cinco tentativas, então será redirecionado ao menu principal
+     */
     public void loginAdmin() {
         int tentativas = 0;
         final int MAX_TENTATIVAS = 5;
 
         while (tentativas < MAX_TENTATIVAS) {
-            System.out.println("\n--- LOGIN ADMIN ---");
+            Formulario formulario = new Formulario()
+                    .adicionarCabecalho("--- LOGIN ADMIN ---")
+                    .adicionarCabecalho("Informe suas credenciais de administrador.")
+                    .adicionarCabecalho("Para cancelar e retornar ao menu anterior, pressione <Enter> sem informar nenhum dado.")
+                    .perguntarOpcao("id", "Digite seu ID: ", 999)
+                    .perguntarSenha("senha", "Digite sua senha: ");
 
-            // Captura ID
-            int id = lerIdAdmin(scanner);
+            // se .mostrar retornar false, o usuário cancelou
+            if(!formulario.mostrar(this.entrada, this.saida)) // formulario foi cancelado?
+                return;
 
-            // Captura senha
-            System.out.print("Digite sua senha: ");
-            String senha = scanner.nextLine();
+            int id = formulario.getInteiro("id");
+            String senha = formulario.getTexto("senha");
 
             // Validação
             UserAdmin admin = AdminDAO.autenticar(id, senha);
 
             if (admin != null) {
-                System.out.println("\nBem-vindo, " + admin.getNome() + "!");
+                Info.mostrar(this.saida, "Bem-vindo, " + admin.getNome() + "!");
                 menuAdmin(admin);
                 return;
             } else {
                 tentativas++;
-                System.out.println("\nCredenciais inválidas! Tentativas restantes: " + (MAX_TENTATIVAS - tentativas));
+                Info.mostrar(this.saida,
+                        "Credenciais inválidas!",
+                        "Tentativas restantes: " + (MAX_TENTATIVAS - tentativas));
             }
         }
 
-        System.out.println("\nNúmero máximo de tentativas excedido. Acesso bloqueado temporariamente.");
+        if(tentativas == MAX_TENTATIVAS)
+            Info.mostrar(this.saida,
+                    "Número máximo de tentativas excedido.",
+                    "Acesso bloqueado temporariamente.");
     }
 
+    // FIXME: Remover. Só está sendo usado em testes
     public int lerIdAdmin(Scanner scanner) {
         while (true) {
             try {
@@ -118,6 +140,7 @@ public class AdminInterface {
         }
     }
 
+    // FIXME: Remover. Não é necessário
     public void setScanner(Scanner scanner) {
         this.scanner = scanner;
     }

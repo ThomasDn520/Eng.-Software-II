@@ -1,128 +1,100 @@
 package Cliente;
 
-import User.User;
+import Console.Widgets.Formulario;
+import Console.Widgets.Info;
+import Console.Widgets.Menu;
+import Loja.LojaSystem;
 import User.UserCliente;
 import Loja.LojaInterface;
-import com.google.gson.JsonArray;
 
-import java.util.InputMismatchException;
-import java.util.Map;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 public class ClienteInterface {
+    private final InputStream entrada;
+    private final PrintStream saida;
 
+    // FIXME: Remover
     protected Scanner scanner = new Scanner(System.in);
     protected ClienteSystem clienteSystem;
 
+    /**
+     * Interface do cliente com o sistema
+     * Essa interface usará a saída e entrada padrão do console ({@code System.in} e {@code System.out})
+     */
     public ClienteInterface() {
+        this(System.in, System.out);
+    }
+
+    /**
+     * Interface do cliente com o sistema
+     * @param saida Stream de saída na qual as informações serão mostradas
+     * @param entrada Stream de entrada pela qual o sistema recebe os dados
+     */
+    public ClienteInterface(InputStream entrada, PrintStream saida) {
+        this.entrada = entrada;
+        this.saida = saida;
         this.clienteSystem = new ClienteSystem();
     }
 
+    // TODO: Remover
     public void setScanner(Scanner scanner) {
         this.scanner = scanner;
     }
 
+    // TODO: Remover
     public void setClienteSystem(ClienteSystem clienteSystem) {
         this.clienteSystem = clienteSystem;
     }
 
     public void menuCliente(UserCliente cliente) {
-        int opcao = 0;
+        Menu menu = new Menu()
+            .adicionarCabecalho("===== Painel do Cliente =====")
+            .adicionarCabecalho("Bem-vindo, " + cliente.getNome() + "!")
+            .adicionarOpcao("Buscar itens", () -> buscarProdutoNome(cliente))
+            .adicionarOpcao("Carrinho de compras", () -> menuCarrinho(cliente))
+            .adicionarOpcao("Atualizar dados", () -> clienteSystem.atualizarCliente(scanner, cliente))
+            .adicionarOpcao("Histórico de compras", () -> historicoCliente(cliente))
+            .adicionarOpcao("Ver nota da loja", () -> {
+                Formulario formulario = new Formulario()
+                        .perguntarLoja("loja", "Digite o nome da loja para ver a nota: ");
 
-        do {
-            System.out.println("\n===== Painel do Cliente =====");
-            System.out.println("Bem-vindo, " + cliente.getNome() + "!");
+                if(!formulario.mostrar(this.entrada, this.saida)) // se foi cancelado
+                    return;
+                String nomeLoja = formulario.getTexto("loja");
 
-            System.out.println("\n1. Buscar itens");
-            System.out.println("2. Carrinho de compras");
-            System.out.println("3. Atualizar dados");
-            System.out.println("4. Histórico de compras");
-            System.out.println("5. Ver nota da loja");
-            System.out.println("0. Sair do sistema");
-            System.out.print("Escolha uma opção: ");
+                // FIXME: Melhorar linha abaixo
+                new LojaInterface(this.entrada, this.saida, this.scanner, new LojaSystem())
+                        .exibirNotaLoja(nomeLoja);
+            })
+            .setPromptSaida("Logout")
+            .setPromptEntrada("Escolha uma opção (0-5): ");
 
-            if (scanner.hasNextInt()) {
-                opcao = scanner.nextInt();
-                scanner.nextLine(); // limpa o buffer
-
-                switch (opcao) {
-                    case 1:
-                        buscarProdutoNome(cliente, scanner);
-                        break;
-                    case 2:
-                        menuCarrinho(cliente);
-                        break;
-                    case 3:
-                        clienteSystem.atualizarCliente(scanner, cliente);
-                        break;
-                    case 4:
-                        historicoCliente(cliente);
-                        break;
-                    case 5:
-                        System.out.print("Digite o nome da loja para ver a nota: ");
-                        String nomeLoja = scanner.nextLine();
-                        LojaInterface.exibirNotaLoja(nomeLoja);
-                        break;
-                    case 0:
-                        System.out.println("Saindo...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida, tente novamente.");
-                }
-            } else {
-                System.out.println("Entrada inválida! Digite um número.");
-                scanner.next();
-            }
-
-        } while (opcao != 0);
+        menu.mostrar(this.entrada, this.saida);
     }
-
 
     public void menuCarrinho(UserCliente cliente) {
-        int opcao = 0;
+        Menu menu = new Menu()
+            .adicionarCabecalho("===== Painel Carrinho de Compras =====")
+                .adicionarCabecalho("Carrinho de " + cliente.getNome() + "!")
+                .adicionarOpcao("Exibir itens", () -> exibirItensCarrinho(cliente))
+                .adicionarOpcao("Remover item", () -> removerItemCarrinho(cliente))
+                .adicionarOpcao("Concluir compra", () -> efetuarCompra(cliente, scanner))
+                .setPromptSaida("Voltar")
+                .setPromptEntrada("Escolha uma opção (0-3): ");
 
-        do {
-
-            System.out.println("\n===== Painel Carrinho de Compras =====");
-            System.out.println("Carrinho de " + cliente.getNome() + "!");
-            System.out.println("\n1. Exibir itens");
-            System.out.println("2. Remover item");
-            System.out.println("3. Concluir compra");
-            System.out.println("4. Sair do sistema");
-            System.out.print("Escolha uma opção: ");
-
-            if (scanner.hasNextInt()) {
-                opcao = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (opcao) {
-                    case 1:
-                        exibirItensCarrinho(cliente);
-                        break;
-                    case 2:
-                        removerItemCarrinho(cliente, scanner);
-                        break;
-                    case 3:
-                        efetuarCompra(cliente, scanner);
-                        break;
-                    case 4:
-                        System.out.println("Saindo...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida, tente novamente.");
-                }
-            } else {
-                System.out.println("Entrada inválida. Digite um número.");
-                scanner.nextLine();
-            }
-
-        } while (opcao != 4);
+        menu.mostrar(this.entrada, this.saida);
     }
 
+    public boolean buscarProdutoNome(UserCliente cliente) {
+        Formulario formulario = new Formulario()
+                .perguntarTexto("produto", "Digite o nome do produto que deseja buscar: ");
 
-    public boolean buscarProdutoNome(UserCliente cliente, Scanner scanner){
-        System.out.print("\nDigite o nome do produto que deseja buscar: ");
-        String nomeBusca = scanner.nextLine().trim().toLowerCase();
+        if(!formulario.mostrar(this.entrada, this.saida))
+            return true;
+
+        String nomeBusca = formulario.getTexto("produto").trim().toLowerCase();
         if(ClienteSystem.buscarProdutoPorNome(cliente, scanner, nomeBusca)){
             return true;
         }
@@ -142,31 +114,32 @@ public class ClienteInterface {
         return false;
     }
 
-    public static boolean removerItemCarrinho(UserCliente cliente, Scanner scanner){
-        System.out.println("Qual produto voce deseja remover do carrinho?");
+    /**
+     * Remove um item do carrinho
+     * @param cliente Cliente logado
+     * @return True se houve sucesso, senão false
+     */
+    public boolean removerItemCarrinho(UserCliente cliente) {
+        if(!ClienteSystem.exibirCarrinho(cliente)){
+            return false;
+        }
 
-        do {
-            if(!ClienteSystem.exibirCarrinho(cliente)){
-                break;
-            }
-            System.out.println("Produtos no carrinho");
+        Formulario formulario = new Formulario()
+            .adicionarCabecalho("Qual produto voce deseja remover do carrinho?")
+            .adicionarCabecalho("Para cancelar, pressione <Enter> sem informar dados.")
+            .perguntarTexto("produto", "Digite um nome: ");
 
-            System.out.print("Digite um nome (ou um número para sair): ");
-            String itemRemover = scanner.nextLine().trim();
+        if(!formulario.mostrar(this.entrada, this.saida))
+            return true;
 
-            if (itemRemover.matches("\\d+")) {
-                System.out.println("Nenhum item removido, saindo...");
-                break;
-            }
-            if (ClienteSystem.removerProduto(cliente, itemRemover)) {
-                System.out.println("Produto removido com sucesso.");
-                return true;
-            } else {
-                System.out.println("Produto não encontrado no carrinho. Tente novamente.");
-            }
+        String itemRemover = formulario.getTexto("produto").trim();
 
-        } while (true);
-
+        if (ClienteSystem.removerProduto(cliente, itemRemover)) {
+            Info.mostrar(this.saida, "Produto removido com sucesso.");
+            return true;
+        } else {
+            Info.mostrar(this.saida, "Produto não encontrado no carrinho. Tente novamente.");
+        }
         return false;
     }
 
@@ -176,24 +149,23 @@ public class ClienteInterface {
      * @return false se ocorreu algum erro, senão true
      */
     public boolean historicoCliente(UserCliente cliente) {
-        int opcao = 0;
-        do {
-            if(!ClienteSystem.exibirHistoricoCliente(cliente)) {
-                return false;
-            }
+        // FIXME: Mudar para Menu ao invés de Formulario
+        if(!ClienteSystem.exibirHistoricoCliente(cliente)) {
+            return false;
+        }
 
-            System.out.println("Escolha o Nº da compra para mais opções, ou 0 (zero) para voltar: ");
-            try {
-                opcao = scanner.nextInt();
-                scanner.nextLine();
-                if (opcao != 0)
-                    detalheCompra(cliente, opcao-1);
-            } catch (InputMismatchException e) {
-                System.out.println("Entrada inválida. Tente novamente.");
-            }
-        } while (opcao != 0);
+        Formulario formulario = new Formulario()
+                .perguntarOpcao("compra",
+                        "Escolha o Nº da compra para mais opções, ou 0 (zero) para voltar: ", 65535);
 
-        System.out.println("Voltando ao menu do cliente...");
+        if(!formulario.mostrar(this.entrada, this.saida)) // cancelado?
+            return true;
+
+        int opcao = formulario.getInteiro("compra");
+        if(opcao != 0)
+            detalheCompra(cliente, opcao-1);
+
+        Info.mostrar(this.saida, "Voltando ao menu do cliente...");
         return true;
     }
 
@@ -204,102 +176,81 @@ public class ClienteInterface {
      * @return false se ocorreu algum erro, senão true
      */
     public boolean detalheCompra(UserCliente cliente, int indiceHistorico) {
-        int opcao = 0;
-        do {
-            System.out.println("1. Avaliar produto");
-            System.out.println("2. Avaliar loja");
-            System.out.println("0. Voltar");
-            System.out.println("Escolha uma opcao: ");
-            try {
-                opcao = scanner.nextInt();
-                scanner.nextLine();
-            } catch (InputMismatchException e) {
-                System.out.println("Entrada inválida. Tente novamente.");
-                continue;
-            }
+        Menu menu = new Menu()
+            .adicionarOpcao("Avaliar produto", () -> avaliarProduto(cliente, indiceHistorico))
+            .adicionarOpcao("Avaliar loja", () -> avaliarLoja(cliente, indiceHistorico))
+            .setPromptSaida("Voltar")
+            .setPromptEntrada("Escolha uma opção: ");
 
-            switch(opcao) {
-                case 1:
-                    avaliarProduto(cliente, indiceHistorico);
-                    return true;
-                case 2:
-                    avaliarLoja(cliente, indiceHistorico);
-                    return true;
-                default:
-                    System.out.println("Opção inválida, tente novamente.");
-            }
-        } while (opcao != 0);
+        menu.mostrar(this.entrada, this.saida);
 
         return true;
     }
 
-
+    /**
+     * Menu inicial da interface do cliente
+     */
     public void loginCadastroCliente() {
-        while (true) {
-            System.out.println("\n==== LOGIN/CADATRO CLIENTE ====");
-            System.out.println("1. Cadastrar Cliente");
-            System.out.println("2. Fazer Login");
-            System.out.println("3. Voltar ao Menu Principal");
-            System.out.print("Escolha uma opção (1-3): ");
+        Menu menu = new Menu()
+                .adicionarCabecalho("==== LOGIN/CADATRO CLIENTE ====")
+                .adicionarOpcao("Fazer login", () -> loginCliente())
+                .adicionarOpcao("Cadastrar Cliente", () -> cadastrarCliente())
+                .setPromptSaida("Voltar ao Menu Principal")
+                .setPromptEntrada("Escolha uma opção (0-2): ");
 
-            Scanner scanner = new Scanner(System.in);
-            int opcao = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (opcao) {
-                case 1:
-                    cadastrarCliente(scanner);
-                    break;
-                case 2:
-                    loginCliente();
-                    break;
-                case 3:
-                    return;
-                default:
-                    System.out.println("Opção inválida, tente novamente.");
-            }
-        }
+        menu.mostrar(this.entrada, this.saida);
     }
 
+    /**
+     * Efetua o login do cliente no sistema
+     */
     public void loginCliente() {
         int tentativas = 0;
         while(tentativas < 5) {
-            System.out.print("E-mail: ");
-            String email = scanner.nextLine();
-            System.out.print("Senha: ");
-            String senha = scanner.nextLine();
+            Formulario formulario = new Formulario()
+                .adicionarCabecalho("Login do cliente")
+                .adicionarCabecalho("Para cancelar, pressione <Enter> sem informar dados.")
+                .perguntarEmail("email", "E-mail: ")
+                .perguntarSenha("senha", "Senha: ");
+
+            if(!formulario.mostrar(this.entrada, this.saida)) // cancelado?
+                return;
+
+            String email = formulario.getTexto("email");
+            String senha = formulario.getTexto("senha");
 
             UserCliente cliente = clienteSystem.autenticarCliente(email, senha);
             if (cliente != null) {
                 menuCliente(cliente);
                 return;
             } else {
-                System.out.println("ID ou senha incorretos!");
+                Info.mostrar(this.saida, "ID ou senha incorretos!");
                 tentativas++;
             }
 
-        } System.out.println("Número de tentativas excedido. Retornando ao menu inicial...");
-
+        }
+        Info.mostrar(this.saida, "Número de tentativas excedido. Retornando ao menu inicial...");
     }
 
-    private void cadastrarCliente(Scanner scanner) {
-        System.out.println("\nDigite 0 a qualquer momento para cancelar o cadastro.");
+    /**
+     * Cadastra um novo cliente no sistema
+     */
+    private void cadastrarCliente() {
+        Formulario formulario = new Formulario()
+            .adicionarCabecalho("Cadastro de cliente")
+            .adicionarCabecalho("Para cancelar, pressione <Enter> sem informar dados.")
+            .perguntarNome("nome", "Nome: ")
+            .perguntarEmail("email", "E-mail: ")
+            .perguntarSenha("senha", "Senha: ")
+            .perguntarCPF("cpf", "CPF: ");
 
-        System.out.print("Nome: ");
-        String nome = scanner.nextLine();
-        if (nome.equals("0")) return;
+        if(!formulario.mostrar(this.entrada, this.saida))
+            return;
 
-        System.out.print("E-mail: ");
-        String email = scanner.nextLine();
-        if (email.equals("0")) return;
-
-        System.out.print("Senha: ");
-        String senha = scanner.nextLine();
-        if (senha.equals("0")) return;
-
-        System.out.print("CPF: ");
-        String cpf = scanner.nextLine();
-        if (cpf.equals("0")) return;
+        String nome = formulario.getTexto("nome");
+        String email = formulario.getTexto("email");
+        String senha = formulario.getTexto("senha");
+        String cpf = formulario.getTexto("cpf");
 
         clienteSystem.criarCliente(nome, email, senha, cpf);
     }
@@ -312,32 +263,26 @@ public class ClienteInterface {
     protected void avaliarLoja(UserCliente cliente, int indiceCompra) {
         String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
         if(nomeLoja == null) {
-            System.out.println("A compra Nº " + indiceCompra + " não existe.");
+            Info.mostrar(this.saida, "A compra Nº " + indiceCompra + " não existe.");
             return;
         }
 
-        System.out.print("Digite uma nota para a loja (1 a 5): ");
-        int nota = 0;
-        try {
-            nota = Integer.parseInt(scanner.nextLine());
-            if (nota < 1 || nota > 5) {
-                System.out.println("Nota inválida. Deve ser entre 1 e 5.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Entrada inválida. Digite um número entre 1 e 5.");
-            return;
-        }
+        Formulario formulario = new Formulario()
+            .perguntarNota("nota", "Digite uma nota para a loja (1 a 5): ", 1, 5)
+            .perguntarTextoOpcional("comentario", "Digite um comentário (opcional): ");
 
-        System.out.print("Digite um comentário (opcional): ");
-        String comentario = scanner.nextLine();
+        if(!formulario.mostrar(this.entrada, this.saida)) // cancelado?
+            return;
+
+        int nota = formulario.getInteiro("nota");
+        String comentario = formulario.getTexto("comentario");
 
         // Agora chama o método com 4 argumentos
         boolean sucesso = ClienteSystem.avaliarLoja(cliente, nomeLoja, nota, comentario);
         if (sucesso) {
-            System.out.println("Avaliação registrada com sucesso!");
+            Info.mostrar(this.saida, "Avaliação registrada com sucesso!");
         } else {
-            System.out.println("Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
+            Info.mostrar(this.saida, "Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
         }
     }
 
@@ -350,34 +295,28 @@ public class ClienteInterface {
         String nomeLoja = ClienteSystem.buscarDetalheCompra("loja", indiceCompra, cliente);
         String nomeProduto = ClienteSystem.buscarDetalheCompra("produto", indiceCompra, cliente);
         if(nomeLoja == null || nomeProduto == null) {
-            System.out.println("A compra Nº " + indiceCompra + " não existe.");
+            Info.mostrar(this.saida, "A compra Nº " + indiceCompra + " não existe.");
             return;
         }
 
-        System.out.print("Digite uma nota para o produto (1 a 5): ");
-        int nota = 0;
-        try {
-            nota = Integer.parseInt(scanner.nextLine());
-            if (nota < 1 || nota > 5) {
-                System.out.println("Nota inválida. Deve ser entre 1 e 5.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Entrada inválida. Digite uma avaliação entre 1 e 5.");
-            return;
-        }
+        Formulario formulario = new Formulario()
+            .perguntarNota("nota", "Digite uma nota para o produto (1 a 5): ", 1, 5)
+            .perguntarTextoOpcional("comentario", "Digite um comentário (opcional): ");
 
-        System.out.print("Digite um comentário (opcional): ");
-        String comentario = scanner.nextLine();
+
+        if(!formulario.mostrar(this.entrada, this.saida)) // cancelado?
+            return;
+
+        int nota = formulario.getInteiro("nota");
+        String comentario = formulario.getTexto("comentario");
 
         // Agora chama o método com 4 argumentos
         boolean sucesso = ClienteSystem.avaliarProduto(cliente, nomeLoja, nomeProduto, nota, comentario);
         if (sucesso) {
-            System.out.println("Avaliação registrada com sucesso!");
+            Info.mostrar(this.saida, "Avaliação registrada com sucesso!");
         } else {
-            System.out.println("Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
+            Info.mostrar(this.saida, "Não foi possível avaliar o produto. Verifique o nome e tente novamente.");
         }
     }
-
 }
 
