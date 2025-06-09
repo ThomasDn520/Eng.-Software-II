@@ -249,7 +249,7 @@ public class Formulario {
      * @return Instância de formulário com a pergunta adicionada
      */
     public Formulario perguntarTexto(String chave, String prompt) {
-        EntradaUsuario<String> entrada = EntradaUsuario.texto(prompt, "[^\\s]+", (texto) -> texto, "Essa mensagem não deveria ser mostrada!");
+        EntradaUsuario<String> entrada = EntradaUsuario.texto(prompt, "^.*[^\\s]+.*$", (texto) -> texto, "O texto não pode conter somente espaços em branco!");
         this.questoes.put(chave, entrada);
         return this;
     }
