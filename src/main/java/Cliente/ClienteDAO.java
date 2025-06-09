@@ -37,6 +37,7 @@ public class ClienteDAO {
         novoCliente.addProperty("email", email);
         novoCliente.addProperty("senha", senha);
         novoCliente.addProperty("cpf", cpf);
+        novoCliente.addProperty("pontos", 0);
 
         clientes.add(novoCliente);
         DatabaseJSON.salvarClientes(clientes);
@@ -432,7 +433,11 @@ public class ClienteDAO {
                         return true;
                     }
 
+                    // Obter pontos totais do cliente
+                    int pontosTotais = consultarPontos(cliente);
+
                     System.out.println("\n════════ HISTÓRICO DE COMPRAS ════════");
+                    System.out.println("PONTOS ACUMULADOS: " + pontosTotais + "\n");
                     System.out.println("COMPRA\tPRODUTO\t\tLOJA\tVALOR\tQTD");
                     System.out.println("══════════════════════════════════════");
 
