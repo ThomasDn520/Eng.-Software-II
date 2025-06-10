@@ -110,26 +110,26 @@ public class ClienteInterface {
             .adicionarCabecalho("Deixe em branco para manter os dados atuais.")
                 .perguntarNome("nome", "Novo nome (" + clienteEditado.getNome() + "): ");
 
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             clienteEditado.setNome(formulario.getTexto("nome"));
 
         // email
         formulario = new Formulario()
                 .perguntarEmail("email", "Novo e-mail (" + clienteEditado.getEmail() + "): ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             clienteEditado.setEmail(formulario.getTexto("email"));
 
         // senha
         formulario = new Formulario()
                 .perguntarSenha("senha", "Nova senha: ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             clienteEditado.setSenha(formulario.getTexto("senha"));
 
 
         // cpf
         formulario = new Formulario()
                 .perguntarSenha("cpf","Novo CPF (" + clienteEditado.getCpf() + "): ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             clienteEditado.setCpf(formulario.getTexto("cpf"));
 
         // atualiza e mostra resultado
@@ -277,7 +277,7 @@ public class ClienteInterface {
             String email = formulario.getTexto("email");
             String senha = formulario.getTexto("senha");
 
-            UserCliente cliente = clienteSystem.autenticarCliente(email, senha);
+            UserCliente cliente = ClienteSystem.autenticarCliente(email, senha);
             if (cliente != null) {
                 menuCliente(cliente);
                 return;

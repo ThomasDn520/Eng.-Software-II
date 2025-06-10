@@ -49,25 +49,25 @@ public class LojaInterface {
                 .adicionarCabecalho("===== Atualização de Dados =====")
                 .adicionarCabecalho("Deixe o campo em branco para manter os dados atuais.")
                 .perguntarNome("nome", "Novo nome (" + loja.getNome() + "): ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             lojaEdit.setNome(formulario.getTexto("nome"));
 
         // E-mail
         formulario = new Formulario()
                 .perguntarEmail("email", "Novo e-mail (" + loja.getEmail() + "): ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             lojaEdit.setEmail(formulario.getTexto("email"));
 
         // Senha
         formulario = new Formulario()
                 .perguntarEmail("senha", "Nova senha: ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             lojaEdit.setSenha(formulario.getTexto("senha"));
 
         // CNPJ
         formulario = new Formulario()
                 .perguntarEmail("cnpj", "Novo CNPJ (" + loja.getCnpj() + "): ");
-        if(!formulario.mostrar(this.entrada, this.saida))
+        if(formulario.mostrar(this.entrada, this.saida))
             lojaEdit.setCnpj(formulario.getTexto("cnpj"));
 
         if(LojaSystem.atualizarLoja(lojaEdit))
