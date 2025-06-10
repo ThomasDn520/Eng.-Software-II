@@ -3,7 +3,6 @@ package Cliente;
 import Console.Widgets.Formulario;
 import Console.Widgets.Info;
 import Console.Widgets.Menu;
-import Loja.LojaSystem;
 import User.UserCliente;
 import Loja.LojaInterface;
 
@@ -54,24 +53,28 @@ public class ClienteInterface {
             .adicionarCabecalho("Bem-vindo, " + cliente.getNome() + "!")
             .adicionarOpcao("Buscar itens", () -> buscarProdutoNome(cliente))
             .adicionarOpcao("Carrinho de compras", () -> menuCarrinho(cliente))
-            .adicionarOpcao("Atualizar dados", () -> clienteSystem.atualizarCliente(scanner, cliente))
+            .adicionarOpcao("Atualizar dados", () -> atualizarCliente(cliente))
             .adicionarOpcao("Histórico de compras", () -> historicoCliente(cliente))
-            .adicionarOpcao("Ver nota da loja", () -> {
-                Formulario formulario = new Formulario()
-                        .perguntarLoja("loja", "Digite o nome da loja para ver a nota: ");
-
-                if(!formulario.mostrar(this.entrada, this.saida)) // se foi cancelado
-                    return;
-                String nomeLoja = formulario.getTexto("loja");
-
-                // FIXME: Melhorar linha abaixo
-                new LojaInterface(this.entrada, this.saida, this.scanner, new LojaSystem())
-                        .exibirNotaLoja(nomeLoja);
-            })
+            .adicionarOpcao("Ver nota da loja", () -> verNotaLoja())
             .setPromptSaida("Logout")
             .setPromptEntrada("Escolha uma opção (0-5): ");
 
         menu.mostrar(this.entrada, this.saida);
+    }
+
+    /**
+     * Mostra a interface para verificar nota da loja
+     */
+    private void verNotaLoja() {
+        Formulario formulario = new Formulario()
+                .perguntarLoja("loja", "Digite o nome da loja para ver a nota: ");
+
+        if(!formulario.mostrar(this.entrada, this.saida)) // se foi cancelado
+            return;
+        String nomeLoja = formulario.getTexto("loja");
+
+        new LojaInterface(this.entrada, this.saida)
+                .exibirNotaLoja(nomeLoja);
     }
 
     public void menuCarrinho(UserCliente cliente) {
@@ -85,6 +88,59 @@ public class ClienteInterface {
                 .setPromptEntrada("Escolha uma opção (0-3): ");
 
         menu.mostrar(this.entrada, this.saida);
+    }
+
+    /**
+     * Mostra o diálogo de atualização de dados do cliente
+     * @param cliente O cliente logado
+     */
+    public void atualizarCliente(UserCliente cliente) {
+        // faz uma cópia
+        UserCliente clienteEditado = new UserCliente(
+                cliente.getId(),
+                cliente.getNome(),
+                cliente.getEmail(),
+                cliente.getSenha(),
+                cliente.getCpf(),
+                cliente.getPontos());
+
+        // nome
+        Formulario formulario = new Formulario()
+            .adicionarCabecalho("===== Atualização de Dados =====\n")
+            .adicionarCabecalho("Deixe em branco para manter os dados atuais.")
+                .perguntarNome("nome", "Novo nome (" + clienteEditado.getNome() + "): ");
+
+        if(!formulario.mostrar(this.entrada, this.saida))
+            clienteEditado.setNome(formulario.getTexto("nome"));
+
+        // email
+        formulario = new Formulario()
+                .perguntarEmail("email", "Novo e-mail (" + clienteEditado.getEmail() + "): ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            clienteEditado.setEmail(formulario.getTexto("email"));
+
+        // senha
+        formulario = new Formulario()
+                .perguntarSenha("senha", "Nova senha: ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            clienteEditado.setSenha(formulario.getTexto("senha"));
+
+
+        // cpf
+        formulario = new Formulario()
+                .perguntarSenha("cpf","Novo CPF (" + clienteEditado.getCpf() + "): ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            clienteEditado.setCpf(formulario.getTexto("cpf"));
+
+        // atualiza e mostra resultado
+        Info info = new Info();
+        if (ClienteSystem.atualizarCliente(clienteEditado)) {
+            info.adicionarTexto("Dados do cliente atualizados com sucesso!");
+        } else {
+            info.adicionarTexto("Erro ao atualizar dados. Talvez o e-mail já esteja em uso.");
+        }
+
+        info.mostrar(this.saida);
     }
 
     public boolean buscarProdutoNome(UserCliente cliente) {
@@ -103,11 +159,13 @@ public class ClienteInterface {
         }
     }
 
+    // TODO: Migrar código de interface
     public static boolean efetuarCompra(UserCliente cliente, Scanner scanner){
         return ClienteSystem.efetuarCompra(cliente, scanner);
     }
 
-    public static boolean exibirItensCarrinho(UserCliente cliente){
+    // TODO: Migrar código de interface
+    public static boolean exibirItensCarrinho(UserCliente cliente) {
         if(ClienteSystem.exibirCarrinho(cliente)){
             return true;
         }

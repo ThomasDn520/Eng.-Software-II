@@ -3,9 +3,9 @@ package Cliente;
 import User.UserCliente;
 import Produto.Produto;
 import Produto.ProdutoDAO;
+import Produto.ProdutoSystem;
 import Loja.LojaDAO;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class ClienteSystem {
@@ -28,6 +28,16 @@ public class ClienteSystem {
         return null;
     }
 
+    /**
+     * Atualiza os dados de um cliente
+     * @param cliente Cliente com os dados atualizados
+     * @return true se o cliente foi atualizado com sucesso, false se ocorreu algum erro
+     */
+    public static boolean atualizarCliente(UserCliente cliente) {
+        return ClienteDAO.atualizar(cliente);
+    }
+
+    // TODO: Remover, só está sendo usado em testes
     public static void atualizarCliente(Scanner scanner, UserCliente cliente) {
         System.out.println("\n===== Atualização de Dados =====");
         System.out.println("Deixe em branco para manter os dados atuais.");
@@ -60,6 +70,7 @@ public class ClienteSystem {
         }
     }
 
+    // TODO: Mover para ProdutoSystem/ProdutoInterface
     public static boolean buscarProdutoPorNome(UserCliente cliente, Scanner scanner, String nomeBusca) {
         Produto[] produtos = ProdutoDAO.buscarTodosProdutos();
         boolean encontrado = false;
@@ -127,7 +138,7 @@ public class ClienteSystem {
 
     public static boolean avaliarProduto(UserCliente cliente, String nomeLoja, String nomeProduto, int nota, String comentario) {
         // Adiciona avaliação do produto
-        boolean sucesso = ProdutoDAO.adicionarAvaliacao(cliente, nomeLoja, nomeProduto, nota, comentario);
+        boolean sucesso = ProdutoSystem.avaliarProduto(cliente, nomeLoja, nomeProduto, nota, comentario);
 
         if (sucesso) {
             System.out.println("Avaliação do produto adicionada com sucesso!");

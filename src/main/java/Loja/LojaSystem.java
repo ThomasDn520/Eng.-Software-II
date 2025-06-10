@@ -1,10 +1,9 @@
 package Loja;
 
-import User.UserCliente;
 import User.UserLoja;
 
+import java.util.List;
 import java.util.Scanner;
-import Produto.ProdutoSystem;
 
 public class LojaSystem {
 
@@ -12,13 +11,19 @@ public class LojaSystem {
         LojaDAO.cadastrarLoja(nome, email, senha, CNPJ);
     }
 
-    public UserLoja autenticarLoja(String email, String senha){
+    public static UserLoja autenticarLoja(String email, String senha){
         if (LojaDAO.validarLogin(email, senha) != null) {
             return LojaDAO.buscarPorEmail(email);
         }
         return null;
     }
 
+    // FIXME: Produtos e avaliações não são passados para a loja atualizada
+    public static boolean atualizarLoja(UserLoja loja) {
+        return LojaDAO.atualizar(loja);
+    }
+
+    // TODO: remover, só está sendo usado em testes
     public static void atualizarLoja(Scanner scanner, UserLoja loja) {
         System.out.println("\n===== Atualização de Dados =====");
         System.out.println("Deixe em branco para manter os dados atuais.");
@@ -54,8 +59,23 @@ public class LojaSystem {
         }
     }
 
-    public static void menuProdutos(UserLoja loja){
-        ProdutoSystem.iniciar(loja);
+    /**
+     * Busca a média de notas dessa loja
+     * @param nomeLoja O nome da loja
+     * @return A média das notas dessa loja, -1 se a loja não tiver sido avaliada ou null se a loja não foi encontrada
+     */
+    public static Double buscarNotaMediaLoja(String nomeLoja) {
+        for(UserLoja loja: LojaDAO.listarTodas()) {
+            if(loja.getNome().equalsIgnoreCase(nomeLoja)) {
+                List<Double> notas = LojaDAO.listarNotas(loja.getCnpj());
+                if(notas.isEmpty())
+                    return -1.0;
+                double somaNotas = 0;
+                for(double nota: notas)
+                    somaNotas += nota;
+                return somaNotas/notas.size();
+            }
+        }
+        return null;
     }
-
 }

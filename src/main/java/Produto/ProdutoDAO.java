@@ -2,11 +2,9 @@ package Produto;
 
 import Database.DatabaseJSON;
 import User.UserLoja;
-import Produto.*;
 import User.User;
 import com.google.gson.*;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,11 +70,9 @@ public class ProdutoDAO {
                         produtos.remove(i);
                         lojaJson.add("produtos", produtos);
                         DatabaseJSON.salvarLojas(lojas);
-                        System.out.println("Produto removido com sucesso!");
                         return true;
                     }
                 }
-                System.out.println("Erro: Produto não encontrado!");
                 return false;
             }
         }

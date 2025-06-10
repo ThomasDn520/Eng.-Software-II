@@ -219,6 +219,7 @@ public class LojaDAO {
         return false; // Loja não encontrada
     }
 
+    // TODO: Remover, só está sendo usado por código morto e testes
     // Retorna nota média e conceito da loja
     public static String obterNotaEConceitoLoja(String nomeLoja) {
         JsonArray lojas = DatabaseJSON.carregarLojas();
@@ -260,5 +261,40 @@ public class LojaDAO {
         }
 
         return "Loja não encontrada.";
+    }
+
+    /**
+     * Lista as notas de uma loja
+     * @param cnpj O cnpj da loja
+     * @return A lista de notas ou null se a loja não foi encontrada
+     */
+    public static List<Double> listarNotas(String cnpj) {
+        JsonObject lojaJson = null;
+
+        for(JsonElement elem: DatabaseJSON.carregarLojas()) {
+            JsonObject json = elem.getAsJsonObject();
+            if(json.get("cnpj").getAsString().equals(cnpj)) {
+                lojaJson = json;
+                break;
+            }
+        }
+
+        // loja não encontrada (isso não deveria acontecer)
+        if(lojaJson == null)
+            return null;
+
+        List<Double> notas = new ArrayList<>();
+
+        // loja não tem avaliações: retorne lista vazia
+        if(!lojaJson.has("avaliacoes") || lojaJson.get("avaliacoes").getAsJsonArray().isEmpty())
+            return notas;
+
+        // adiciona notas à lista
+        for(JsonElement elem: lojaJson.getAsJsonArray("avaliacoes")) {
+            JsonObject avaliacaoJson = elem.getAsJsonObject();
+            notas.add(avaliacaoJson.get("nota").getAsDouble());
+        }
+
+        return notas;
     }
 }

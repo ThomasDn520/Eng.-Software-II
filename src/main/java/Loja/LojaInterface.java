@@ -3,12 +3,12 @@ package Loja;
 import Console.Widgets.Formulario;
 import Console.Widgets.Info;
 import Console.Widgets.Menu;
+import Produto.ProdutoInterface;
 import User.UserLoja;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import Produto.ProdutoDAO;
-import Database.DatabaseJSON;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -20,32 +20,60 @@ public class LojaInterface {
     private final InputStream entrada;
     private final PrintStream saida;
 
-    private Scanner scanner = new Scanner(System.in);
-    LojaSystem lojaSystem;
-
     // Modificado para aceitar um Scanner externo
     public LojaInterface() {
-        this(System.in, System.out, new Scanner(System.in), new LojaSystem());
+        this(System.in, System.out);
     }
 
-    public LojaInterface(InputStream entrada, PrintStream saida, Scanner scanner, LojaSystem lojaSystem) {
+    public LojaInterface(InputStream entrada, PrintStream saida) {
         this.entrada = entrada;
         this.saida = saida;
-        this.scanner = scanner;
-        this.lojaSystem = lojaSystem;
     }
 
+    // FIXME: Migrar para construtor acima
     // Novo construtor para testes
     public LojaInterface(Scanner scanner, LojaSystem lojaSystem) {
-        this(System.in, System.out, scanner, lojaSystem); // Usa mock no teste
+        this(System.in, System.out); // Usa mock no teste
     }
 
-    public void setScanner(Scanner scanner) {
-        this.scanner = scanner;
-    }
+    public void atualizarLoja(UserLoja loja) {
+        UserLoja lojaEdit = new UserLoja(
+                loja.getId(),
+                loja.getNome(),
+                loja.getEmail(),
+                loja.getSenha(),
+                loja.getCnpj());
 
-    public void atualizarLoja(Scanner scanner, UserLoja loja) {
-        LojaSystem.atualizarLoja(scanner, loja);
+        // Nome
+        Formulario formulario = new Formulario()
+                .adicionarCabecalho("===== Atualização de Dados =====")
+                .adicionarCabecalho("Deixe o campo em branco para manter os dados atuais.")
+                .perguntarNome("nome", "Novo nome (" + loja.getNome() + "): ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            lojaEdit.setNome(formulario.getTexto("nome"));
+
+        // E-mail
+        formulario = new Formulario()
+                .perguntarEmail("email", "Novo e-mail (" + loja.getEmail() + "): ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            lojaEdit.setEmail(formulario.getTexto("email"));
+
+        // Senha
+        formulario = new Formulario()
+                .perguntarEmail("senha", "Nova senha: ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            lojaEdit.setSenha(formulario.getTexto("senha"));
+
+        // CNPJ
+        formulario = new Formulario()
+                .perguntarEmail("cnpj", "Novo CNPJ (" + loja.getCnpj() + "): ");
+        if(!formulario.mostrar(this.entrada, this.saida))
+            lojaEdit.setCnpj(formulario.getTexto("cnpj"));
+
+        if(LojaSystem.atualizarLoja(lojaEdit))
+            Info.mostrar(this.saida, "Dados da loja atualizados com sucesso!");
+        else
+            Info.mostrar(this.saida, "Erro ao atualizar dados");
     }
 
     public void menuLoja(UserLoja loja) {
@@ -53,8 +81,8 @@ public class LojaInterface {
             .adicionarCabecalho("===== Painel da Loja =====")
             .adicionarCabecalho("Bem vindo, " + loja.getNome() + "!")
             .adicionarOpcao("Informações Loja", () -> exibirNotaLoja(loja.getNome()))
-            .adicionarOpcao("Gerenciar produtos", () -> LojaSystem.menuProdutos(loja))
-            .adicionarOpcao("Atualizar dados", () -> LojaSystem.atualizarLoja(scanner, loja))
+            .adicionarOpcao("Gerenciar produtos", () -> menuProdutos(loja))
+            .adicionarOpcao("Atualizar dados", () -> atualizarLoja(loja))
             .setPromptSaida("Logout")
             .setPromptEntrada("Escolha uma opção (0-3): ");
 
@@ -108,7 +136,7 @@ public class LojaInterface {
             String email = formulario.getTexto("email");
             String senha = formulario.getTexto("senha");
 
-            UserLoja loja = lojaSystem.autenticarLoja(email, senha);
+            UserLoja loja = LojaSystem.autenticarLoja(email, senha);
 
             if (loja != null) {
                 Info.mostrar(this.saida, "Login bem-sucedido!"); // <-- Debug
@@ -123,6 +151,7 @@ public class LojaInterface {
         Info.mostrar(this.saida, "Número de tentativas excedido. Retornando ao menu inicial...");
     }
 
+    // TODO: Remover se não estiver sendo usado
     public void exibirProdutosLojaComNota(String nomeLoja) {
         Info.mostrar(this.saida, "Loja: " + nomeLoja);
 
@@ -148,45 +177,49 @@ public class LojaInterface {
         }
     }
 
+    /**
+     * Mostra a nota média e conceito da loja
+     * @param nomeLoja O nome da loja
+     */
     public void exibirNotaLoja(String nomeLoja) {
-        JsonArray lojas = DatabaseJSON.carregarLojas();
+        Double media = LojaSystem.buscarNotaMediaLoja(nomeLoja);
 
-        for (int i = 0; i < lojas.size(); i++) {
-            JsonObject loja = lojas.get(i).getAsJsonObject();
-            if (loja.get("nome").getAsString().equalsIgnoreCase(nomeLoja)) {
-
-                if (!loja.has("avaliacoes") || loja.get("avaliacoes").getAsJsonArray().size() == 0) {
-                    Info.mostrar(this.saida,
-                            "Loja: " + nomeLoja,
-                            "Esta loja não possui avaliações ainda.");
-                    return;
-                }
-
-                JsonArray avaliacoes = loja.getAsJsonArray("avaliacoes");
-                double somaNotas = 0;
-                for (int j = 0; j < avaliacoes.size(); j++) {
-                    JsonObject avaliacao = avaliacoes.get(j).getAsJsonObject();
-                    somaNotas += avaliacao.get("nota").getAsInt();
-                }
-                double media = somaNotas / avaliacoes.size();
-
-                String conceito;
-                if (media < 2.0) {
-                    conceito = "Avaliação: Ruim";
-                } else if (media < 3.5) {
-                    conceito = "Avaliação: Médio";
-                } else if (media < 4.5) {
-                    conceito = "Avaliação: Bom";
-                } else {
-                    conceito = "Excelente";
-                }
-
-                String resultado = String.format("Loja: %s%nNota média: %.2f (%s)%n", nomeLoja, media, conceito);
-                Info.mostrar(this.saida, resultado);
-                return;
-            }
+        // loja não existe
+        if(media == null) {
+            Info.mostrar(this.saida, "Loja não encontrada.");
+            return;
         }
 
-        Info.mostrar(this.saida, "Loja não encontrada.");
+        // loja não tem avaliações
+        if(media < 0) {
+            Info.mostrar(this.saida,
+                    "Loja: " + nomeLoja,
+                    "Esta loja não possui avaliações ainda.");
+            return;
+        }
+
+        String conceito;
+        if (media < 2.0) {
+            conceito = "Avaliação: Ruim";
+        } else if (media < 3.5) {
+            conceito = "Avaliação: Médio";
+        } else if (media < 4.5) {
+            conceito = "Avaliação: Bom";
+        } else {
+            conceito = "Excelente";
+        }
+
+        Info.mostrar(this.saida,
+                "Loja: " + nomeLoja,
+                String.format("Nota média: %.2f", media),
+                conceito);
+    }
+
+    /**
+     * Mostra o menu de produtos
+     * @param loja A loja que vende os produtos
+     */
+    public void menuProdutos(UserLoja loja) {
+        new ProdutoInterface(this.entrada, this.saida).menuProdutos(loja);
     }
 }

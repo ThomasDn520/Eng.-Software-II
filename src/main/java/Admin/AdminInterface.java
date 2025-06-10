@@ -3,7 +3,6 @@ package Admin;
 import Console.Widgets.Formulario;
 import Console.Widgets.Info;
 import Console.Widgets.Menu;
-import Loja.LojaSystem;
 import User.UserAdmin;
 import Loja.LojaInterface;
 import User.UserCliente;
@@ -79,7 +78,7 @@ public class AdminInterface {
                         return;
                     String nomeLoja = f.getTexto("loja");
                     // TODO: Remover scanner dessa classe quando remover o scanner da LojaInterface
-                    new LojaInterface(this.entrada, this.saida, this.scanner, new LojaSystem())
+                    new LojaInterface(this.entrada, this.saida)
                             .exibirNotaLoja(nomeLoja);
                 })
                 .setPromptSaida("Logout")
