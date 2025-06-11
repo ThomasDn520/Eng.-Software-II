@@ -51,9 +51,9 @@ class AdminDAOTest {
         assertTrue(id > 0, "O ID retornado deve ser maior que zero");
 
         JsonArray admins = carregarAdmins();
-        assertEquals(3, admins.size(), "Deve haver um administrador no arquivo");
+        assertEquals(1, admins.size(), "Deve haver um administrador no arquivo");
 
-        JsonObject admin = admins.get(2).getAsJsonObject();
+        JsonObject admin = admins.get(0).getAsJsonObject();
         assertEquals("Novo Admin", admin.get("nome").getAsString());
         assertEquals("novo@admin.com", admin.get("email").getAsString());
         assertEquals("senha123", admin.get("senha").getAsString());
@@ -112,6 +112,8 @@ class AdminDAOTest {
     @Test
     void testListarTodos() throws IOException {
         AdminDAO adminDAO = new AdminDAO();
+        adminDAO.cadastrarAdmin("Admin Existente2", "admin2@exemplo.com", "senha2123");
+        adminDAO.cadastrarAdmin("Admin Existente3", "admin3@exemplo.com", "senha3123");
         List<UserAdmin> listaAdmins = adminDAO.listarTodos();
         assertEquals(2, listaAdmins.size());
     }
