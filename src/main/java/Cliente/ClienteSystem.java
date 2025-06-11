@@ -141,6 +141,9 @@ public class ClienteSystem {
         boolean sucesso = ProdutoSystem.avaliarProduto(cliente, nomeLoja, nomeProduto, nota, comentario);
 
         if (sucesso) {
+            // Atualiza pontuação
+            cliente.setPontos(cliente.getPontos()+1);
+            ClienteDAO.atualizar(cliente);
             System.out.println("Avaliação do produto adicionada com sucesso!");
         } else {
             System.out.println("Erro ao adicionar avaliação do produto.");
@@ -160,6 +163,9 @@ public class ClienteSystem {
         boolean sucesso = LojaDAO.adicionarAvaliacaoLoja(cliente.getId(), nomeLoja, nota, comentario);
 
         if (sucesso) {
+            // Atualiza pontuação
+            cliente.setPontos(cliente.getPontos()+1);
+            ClienteDAO.atualizar(cliente);
             System.out.println("Avaliação da loja adicionada com sucesso!");
         } else {
             System.out.println("Erro ao adicionar avaliação da loja.");
