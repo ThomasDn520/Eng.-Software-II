@@ -338,7 +338,9 @@ public class ClienteInterface {
         // Agora chama o método com 4 argumentos
         boolean sucesso = ClienteSystem.avaliarLoja(cliente, nomeLoja, nota, comentario);
         if (sucesso) {
-            Info.mostrar(this.saida, "Avaliação registrada com sucesso!");
+            Info.mostrar(this.saida,
+                    "Avaliação registrada com sucesso!",
+                    "Você ganhou +1 ponto e tem " + cliente.getPontos() + " pontos no total.");
         } else {
             Info.mostrar(this.saida, "Não foi possível avaliar a loja. Verifique o nome e tente novamente.");
         }
@@ -371,7 +373,9 @@ public class ClienteInterface {
         // Agora chama o método com 4 argumentos
         boolean sucesso = ClienteSystem.avaliarProduto(cliente, nomeLoja, nomeProduto, nota, comentario);
         if (sucesso) {
-            Info.mostrar(this.saida, "Avaliação registrada com sucesso!");
+            Info.mostrar(this.saida,
+                    "Avaliação registrada com sucesso!",
+                    "Você ganhou +1 ponto e tem " + cliente.getPontos() + " pontos no total.");
         } else {
             Info.mostrar(this.saida, "Não foi possível avaliar o produto. Verifique o nome e tente novamente.");
         }
