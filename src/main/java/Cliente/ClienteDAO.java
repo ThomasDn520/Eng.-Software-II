@@ -424,34 +424,66 @@ public class ClienteDAO {
                 JsonObject clienteJson = element.getAsJsonObject();
                 if (clienteJson.get("id").getAsInt() == cliente.getId()) {
 
-                    JsonArray historico = clienteJson.has("historicoCompras")
+                    // Carrega histórico de compras ou cria vazio se não existir
+                    JsonArray historicoCompras = clienteJson.has("historicoCompras")
                             ? clienteJson.getAsJsonArray("historicoCompras")
                             : new JsonArray();
 
-                    if (historico.size() == 0) {
+                    // Carrega histórico de pontos ou cria vazio se não existir
+                    JsonArray historicoPontos = clienteJson.has("historicoPontos")
+                            ? clienteJson.getAsJsonArray("historicoPontos")
+                            : new JsonArray();
+
+                    if (historicoCompras.size() == 0) {
                         System.out.println("\n📭 Nenhuma compra realizada");
                         return true;
                     }
 
-                    // Obter pontos totais do cliente
+                    // Calcula pontos totais de cada categoria
                     int pontosTotais = consultarPontos(cliente);
+                    int pontosCompras = calcularPontosTotaisCompras(historicoCompras);
+                    int pontosAvaliacoes = calcularPontosTotaisAvaliacoes(historicoPontos);
 
+                    // Verificação de consistência (para debug)
+                    if (pontosTotais != (pontosCompras + pontosAvaliacoes)) {
+                        System.err.println("⚠️ Aviso: Inconsistência na contagem de pontos!");
+                        System.err.println("Total: " + pontosTotais + " | Compras: " + pontosCompras
+                                + " | Avaliações: " + pontosAvaliacoes);
+                    }
+
+                    // Exibe cabeçalho com informações de pontos
                     System.out.println("\n════════ HISTÓRICO DE COMPRAS ════════");
-                    System.out.println("PONTOS ACUMULADOS: " + pontosTotais + "\n");
-                    System.out.println("COMPRA\tPRODUTO\t\tLOJA\tVALOR\tQTD");
-                    System.out.println("══════════════════════════════════════");
+                    System.out.println("PONTOS TOTAIS: " + pontosTotais);
+                    System.out.println("  - Pontos por compras: " + pontosCompras);
+                    System.out.println("  - Pontos por avaliações: " + pontosAvaliacoes + "\n");
 
-                    for (int i = 0; i < historico.size(); i++) {
-                        JsonObject compra = historico.get(i).getAsJsonObject();
+                    // Cabeçalho da tabela de compras
+                    System.out.println("COMPRA\tPRODUTO\t\tLOJA\tVALOR\tQTD\tPONTOS");
+                    System.out.println("══════════════════════════════════════════");
+
+                    // Lista todas as compras
+                    for (int i = 0; i < historicoCompras.size(); i++) {
+                        JsonObject compra = historicoCompras.get(i).getAsJsonObject();
+                        double valorCompra = compra.get("valor").getAsDouble() * compra.get("quantidade").getAsInt();
+                        int pontosCompra = calcularPontos(valorCompra);
+
                         System.out.printf(
-                                "#%-6d%-12s\t%-8s\tR$%-7.2f%d%n",
+                                "#%-6d%-12s\t%-8s\tR$%-7.2f%d\t+%d pts%n",
                                 i+1,
                                 compra.get("produto").getAsString(),
                                 compra.get("loja").getAsString(),
                                 compra.get("valor").getAsDouble(),
-                                compra.get("quantidade").getAsInt()
+                                compra.get("quantidade").getAsInt(),
+                                pontosCompra
                         );
                     }
+
+                    // Adiciona legenda se houver inconsistência
+                    if (pontosTotais != (pontosCompras + pontosAvaliacoes)) {
+                        System.out.println("\n⚠️ Nota: A diferença nos pontos pode ser devido a");
+                        System.out.println("promoções ou outras atividades não listadas");
+                    }
+
                     return true;
                 }
             }
@@ -459,8 +491,34 @@ public class ClienteDAO {
             return false;
         } catch (Exception e) {
             System.err.println("Erro ao exibir histórico: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
+    }
+
+    private static int calcularPontosTotaisAvaliacoes(JsonArray historicoPontos) {
+        int total = 0;
+        if (historicoPontos != null) {
+            for (JsonElement element : historicoPontos) {
+                JsonObject ponto = element.getAsJsonObject();
+                if (ponto.has("tipo") && ponto.get("tipo").getAsString().equals("avaliacao")) {
+                    total += ponto.get("pontos").getAsInt();
+                }
+            }
+        }
+        return total;
+    }
+
+    private static int calcularPontosTotaisCompras(JsonArray historicoCompras) {
+        int pontosTotais = 0;
+
+        for (JsonElement element : historicoCompras) {
+            JsonObject compra = element.getAsJsonObject();
+            double valor = compra.get("valor").getAsDouble() * compra.get("quantidade").getAsInt();
+            pontosTotais += calcularPontos(valor);
+        }
+
+        return pontosTotais;
     }
 
     public static boolean adicionarHistoricoCompra(UserCliente cliente, String nomeProduto, int quantidadeCompra, String nomeLoja, double valor) {
@@ -479,6 +537,10 @@ public class ClienteDAO {
                 historicoItem.addProperty("quantidade", quantidadeCompra);
                 historicoItem.addProperty("loja", nomeLoja);
                 historicoItem.addProperty("valor", valor);
+
+                // Calcula e armazena os pontos ganhos nesta compra
+                int pontosGanhos = calcularPontos(valor * quantidadeCompra);
+                historicoItem.addProperty("pontosGanhos", pontosGanhos);
 
                 historicoCompras.add(historicoItem);
 
@@ -532,6 +594,75 @@ public class ClienteDAO {
             System.out.println("Cliente não encontrado para adicionar pontos.");
             return false;
         }
+    }
+
+    public static void registrarPontosAvaliacao(UserCliente cliente, String descricao) {
+        JsonArray clientes = DatabaseJSON.carregarClientes();
+
+        for (JsonElement element : clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                JsonArray historicoPontos = clienteJson.has("historicoPontos")
+                        ? clienteJson.getAsJsonArray("historicoPontos")
+                        : new JsonArray();
+
+                JsonObject pontoItem = new JsonObject();
+                pontoItem.addProperty("tipo", "avaliacao");
+                pontoItem.addProperty("descricao", descricao);
+                pontoItem.addProperty("pontos", 1);
+                pontoItem.addProperty("data", new java.util.Date().toString());
+
+                historicoPontos.add(pontoItem);
+                clienteJson.add("historicoPontos", historicoPontos);
+                DatabaseJSON.salvarClientes(clientes);
+                break;
+            }
+        }
+    }
+
+    public static void exibirDetalhesPontos(UserCliente cliente) {
+        JsonArray clientes = DatabaseJSON.carregarClientes();
+
+        for (JsonElement element : clientes) {
+            JsonObject clienteJson = element.getAsJsonObject();
+            if (clienteJson.get("id").getAsInt() == cliente.getId()) {
+                int pontosTotais = consultarPontos(cliente);
+                int pontosCompras = 0;
+                int pontosAvaliacoes = 0;
+
+                // Calcula pontos de compras
+                if (clienteJson.has("historicoCompras")) {
+                    JsonArray historicoCompras = clienteJson.getAsJsonArray("historicoCompras");
+                    pontosCompras = calcularPontosTotaisCompras(historicoCompras);
+                }
+
+                // Pontos de avaliações são a diferença
+                pontosAvaliacoes = pontosTotais - pontosCompras;
+
+                System.out.println("\n════════ DETALHES DE PONTOS ════════");
+                System.out.println("PONTOS TOTAIS: " + pontosTotais);
+                System.out.println("  - Pontos por compras: " + pontosCompras);
+                System.out.println("  - Pontos por avaliações: " + pontosAvaliacoes);
+
+                // Exibir histórico recente de pontos
+                if (clienteJson.has("historicoPontos")) {
+                    System.out.println("\nÚLTIMAS ATIVIDADES:");
+                    JsonArray historicoPontos = clienteJson.getAsJsonArray("historicoPontos");
+                    int limite = Math.min(5, historicoPontos.size()); // Mostra até 5 itens
+
+                    for (int i = historicoPontos.size() - 1; i >= Math.max(0, historicoPontos.size() - 5); i--) {
+                        JsonObject ponto = historicoPontos.get(i).getAsJsonObject();
+                        System.out.printf("  %s: +%d pts (%s)%n",
+                                ponto.get("descricao").getAsString(),
+                                ponto.get("pontos").getAsInt(),
+                                ponto.get("data").getAsString());
+                    }
+                }
+
+                return;
+            }
+        }
+        System.out.println("Cliente não encontrado.");
     }
 
     public static void exibirPontos(UserCliente cliente) {

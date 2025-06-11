@@ -37,6 +37,10 @@ public class ClienteSystem {
         return ClienteDAO.atualizar(cliente);
     }
 
+    public static void exibirDetalhesPontos(UserCliente cliente) {
+        ClienteDAO.exibirDetalhesPontos(cliente);
+    }
+
     // TODO: Remover, só está sendo usado em testes
     public static void atualizarCliente(Scanner scanner, UserCliente cliente) {
         System.out.println("\n===== Atualização de Dados =====");
@@ -142,9 +146,13 @@ public class ClienteSystem {
 
         if (sucesso) {
             // Atualiza pontuação
-            cliente.setPontos(cliente.getPontos()+1);
-            ClienteDAO.atualizar(cliente);
-            System.out.println("Avaliação do produto adicionada com sucesso!");
+            ClienteDAO.adicionarPontos(cliente, 1); // 1 ponto por avaliação
+
+            // Registra no histórico de pontos
+            String descricao = "Avaliação do produto: " + nomeProduto + " na loja " + nomeLoja;
+            ClienteDAO.registrarPontosAvaliacao(cliente, descricao);
+
+            System.out.println("Avaliação do produto adicionada com sucesso! +1 ponto");
         } else {
             System.out.println("Erro ao adicionar avaliação do produto.");
         }
