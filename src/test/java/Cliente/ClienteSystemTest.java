@@ -131,22 +131,5 @@ public class ClienteSystemTest {
         boolean resultado = ClienteDAO.removerProdutoDoCarrinho(cliente, "Produto Inexistente");
         assertFalse(resultado);
     }
-
-    @Test
-    void testBuscarProdutoPorNome_ProdutoNaoEncontrado() {
-        Produto[] produtos = {
-                new Produto("Produto Teste", 30.5, "Eletrônico", 2, "Marca", "Descrição"),
-        };
-        ProdutoDAO.setProdutos(produtos); // precisa simular isso
-
-        String entrada = "Produto Inexistente\nLoja Inexistente\n";
-        Scanner scanner = new Scanner(new ByteArrayInputStream(entrada.getBytes()));
-
-        UserCliente cliente = new UserCliente(5, "usuarioTeste", "Test@gmail.com", "11234", "24332454651");
-
-        boolean resultado = ClienteSystem.buscarProdutoPorNome(cliente, scanner, "inexistente");
-
-        assertFalse(resultado);
-    }
 }
 

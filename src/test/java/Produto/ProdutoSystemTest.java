@@ -49,8 +49,8 @@ class ProdutoSystemTest {
     private void provideInput(String data) {
         testIn = new ByteArrayInputStream(data.getBytes());
         System.setIn(testIn);
-        // Se o scanner é um campo estático da classe ProdutoService, reinicialize-o aqui:
-        ProdutoSystem.scanner = new Scanner(System.in);
+        ProdutoSystem.scanner = new Scanner(System.in); // reset do scanner
+        setUpOutput(); // garante captura da saída
     }
 
     private String getOutput() {
@@ -63,9 +63,10 @@ class ProdutoSystemTest {
         System.setOut(systemOut);
     }
 
+    // ---------- Testes de ProdutoDAO ----------
+
     @Test
     void testCadastrarProdutoDiretamente() {
-        // Simula cadastro manual
         Produto produto = new Produto("Camiseta", 59.90, "Vestuário", 10, "Nike", "Camiseta confortável");
         produto.setLoja(loja.getNome());
         ProdutoDAO.adicionarProduto(loja, produto);
@@ -93,7 +94,6 @@ class ProdutoSystemTest {
     @Test
     void testRemoverProdutoInexistente() {
         boolean removido = ProdutoDAO.removerProduto(loja, "Produto Que Não Existe");
-
         assertFalse(removido, "Não deveria remover nada");
     }
 
@@ -113,7 +113,6 @@ class ProdutoSystemTest {
     @Test
     void testBuscarProdutoInexistente() {
         Produto encontrado = ProdutoDAO.buscarProduto(loja, "Produto Fantasma");
-
         assertNull(encontrado);
     }
 
@@ -133,15 +132,14 @@ class ProdutoSystemTest {
         assertEquals(2, produtos.size());
     }
 
+    // ---------- Testes de avaliação de produto ----------
+
     @Test
     public void testAvaliarProduto_Sucesso() {
-        // Entradas simuladas: nome loja, nome produto, nota, comentário
-        String input = "LojaLegal\nProdutoX\n5\nÓtimo produto\n";
+        String input = "Loja Teste\nProdutoX\n5\nÓtimo produto\n";
         provideInput(input);
 
-        UserCliente usuario = new UserCliente(2, "Loja Teste", "teste@loja.com", "senha", "1234567899876");
-
-        // Aqui o ProdutoDAO.adicionarAvaliacao precisa estar funcional e aceitar essa avaliação
+        UserCliente usuario = new UserCliente(2, "Cliente Teste", "cliente@teste.com", "senha", "1234567899876");
         ProdutoSystem.avaliarProduto(usuario);
 
         String output = getOutput();
@@ -150,15 +148,14 @@ class ProdutoSystemTest {
         assertTrue(output.contains("Nota (1 a 5):"));
         assertTrue(output.contains("Comentário (opcional):"));
         assertTrue(output.contains("Avaliação adicionada com sucesso!") || output.contains("Erro ao adicionar avaliação."));
-        // Se o método ProdutoDAO.adicionarAvaliacao estiver funcionando, deve entrar no "Avaliação adicionada com sucesso!"
     }
 
     @Test
     public void testAvaliarProduto_NotaInvalida_Letra() {
-        String input = "LojaLegal\nProdutoX\nabc\nComentário\n";
+        String input = "Loja Teste\nProdutoX\nabc\nComentário\n";
         provideInput(input);
 
-        UserCliente usuario = new UserCliente(2, "Loja Teste", "teste@loja.com", "senha", "1234567899876");
+        UserCliente usuario = new UserCliente(2, "Cliente Teste", "cliente@teste.com", "senha", "1234567899876");
         ProdutoSystem.avaliarProduto(usuario);
 
         String output = getOutput();
@@ -170,8 +167,8 @@ class ProdutoSystemTest {
         String input = "Loja Teste\nProdutoX\n0\nComentário\n";
         provideInput(input);
 
-        UserCliente usuario = new UserCliente(2, "Loja Teste", "teste@loja.com", "senha", "1234567899876");
-        ProdutoSystem.avaliarProduto(loja);
+        UserCliente usuario = new UserCliente(2, "Cliente Teste", "cliente@teste.com", "senha", "1234567899876");
+        ProdutoSystem.avaliarProduto(usuario);
 
         String output = getOutput();
         assertTrue(output.contains("Nota inválida. Deve estar entre 1 e 5."));

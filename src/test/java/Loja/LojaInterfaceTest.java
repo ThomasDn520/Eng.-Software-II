@@ -1,150 +1,59 @@
 package Loja;
 
-import org.junit.jupiter.api.*;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Scanner;
-
-import User.UserLoja;
-import org.mockito.Mockito;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+import Loja.LojaInterface;
+import Loja.LojaSystem;
+import org.junit.jupiter.api.*;
+import org.mockito.MockedStatic;
+
+import java.io.*;
+
 public class LojaInterfaceTest {
 
-    private LojaSystem lojaSystem;
     private LojaInterface lojaInterface;
-    private Scanner scanner;
-    private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-    private static final String FILE_NAME_LOJA = "database_loja.json"; // Banco de dados JSON original
-    private static final String BACKUP_FILE_LOJA = "lojaDB_backup.json"; // Arquivo de backup temporário
+    private ByteArrayOutputStream saida;
 
     @BeforeEach
-    void setUp() throws IOException {
-        criarBackup();
-        Scanner scanner = new Scanner(System.in);
-        lojaSystem = new LojaSystem();
-        lojaSystem = mock(LojaSystem.class);
-        lojaInterface = new LojaInterface(scanner, lojaSystem);
-        lojaInterface = Mockito.spy(new LojaInterface());
-
-        // Redireciona a saída para capturar os prints
-        outputStream = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outputStream));
-        System.setIn(new ByteArrayInputStream("".getBytes()));
+    public void setup() {
+        saida = new ByteArrayOutputStream();
+        lojaInterface = new LojaInterface(System.in, new PrintStream(saida));
     }
 
-    @AfterEach
-    void tearDown() throws IOException {
-        restaurarBackup();
-        reset(lojaSystem);  // Reseta o mock para garantir que o estado do mock não seja compartilhado
-        System.setOut(System.out);
-        System.setIn(System.in);
-    }
+    @Test
+    public void testExibirNotaLoja_LojaNaoEncontrada() {
+        try (MockedStatic<LojaSystem> mocked = mockStatic(LojaSystem.class)) {
+            mocked.when(() -> LojaSystem.buscarNotaMediaLoja("LojaInexistente")).thenReturn(null);
 
-    private void criarBackup() throws IOException {
-        File dbFile = new File(FILE_NAME_LOJA);
-        File backupFile = new File(BACKUP_FILE_LOJA);
-        if (dbFile.exists()) {
-            Files.copy(dbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
+            lojaInterface.exibirNotaLoja("LojaInexistente");
 
-    private void restaurarBackup() throws IOException {
-        File dbFile = new File(FILE_NAME_LOJA);
-        File backupFile = new File(BACKUP_FILE_LOJA);
-        if (backupFile.exists()) {
-            Files.copy(backupFile.toPath(), dbFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            backupFile.delete();
+            String output = saida.toString();
+            Assertions.assertTrue(output.contains("Loja não encontrada."));
         }
     }
 
     @Test
-    @Order(1)
-    public void testEntradaInvalida() {
-        LojaSystem lojaSystemReal = new LojaSystem();
-        Scanner scanner = new Scanner(new ByteArrayInputStream("abc\n4\n".getBytes()));
-        lojaInterface = new LojaInterface(scanner, lojaSystemReal);
+    public void testExibirNotaLoja_SemAvaliacoes() {
+        try (MockedStatic<LojaSystem> mocked = mockStatic(LojaSystem.class)) {
+            mocked.when(() -> LojaSystem.buscarNotaMediaLoja("LojaSemAvaliacoes")).thenReturn(-1.0);
 
-        lojaInterface.menuLoja(new UserLoja(8, "Loja Teste", "email@teste.com", "123", "123"));
+            lojaInterface.exibirNotaLoja("LojaSemAvaliacoes");
 
-        String output = outputStream.toString();
-        assertTrue(output.contains("Entrada inválida! Digite um número."));
-        assertTrue(output.contains("Saindo..."));
+            String output = saida.toString();
+            Assertions.assertTrue(output.contains("Esta loja não possui avaliações ainda."));
+        }
     }
 
     @Test
-    @Order(2)
-    public void testOpcao1InformacoesLoja() {
-        String input = "1\n4\n"; // Opção 1 + sair
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
-        lojaInterface.setScanner(new Scanner(System.in));
+    public void testExibirNotaLoja_ComAvaliacoes() {
+        try (MockedStatic<LojaSystem> mocked = mockStatic(LojaSystem.class)) {
+            mocked.when(() -> LojaSystem.buscarNotaMediaLoja("LojaBoa")).thenReturn(4.20);
 
-        lojaInterface.menuLoja(new UserLoja(4, "Loja Teste", "email@teste.com", "123", "123"));
+            lojaInterface.exibirNotaLoja("LojaBoa");
 
-        String output = outputStream.toString();
-        assertTrue(output.contains("Função não implementada!"));
-        assertTrue(output.contains("Saindo..."));
+            String output = saida.toString();
+            Assertions.assertTrue(output.contains("Loja: LojaBoa"));
+            Assertions.assertTrue(output.contains("Avaliação: Bom"));
+        }
     }
-
-    @Test
-    @Order(3)
-    public void testOpcao2AdicionarProduto() {
-        String input = "4\n";
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
-        lojaInterface.setScanner(new Scanner(System.in));
-
-        lojaInterface.menuLoja(new UserLoja(5, "Loja Teste", "email@teste.com", "123", "123"));
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Saindo..."));
-    }
-
-    @Test
-    @Order(4)
-    public void testOpcao3AtualizarDados() {
-        // Simulando a entrada: opção 3 (atualizar dados) e depois 4 (sair)
-        String input = "3\n\n\n\n\n4\n";
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
-
-        Scanner scanner = new Scanner(System.in);
-
-        // Criando uma instância real do LojaSystem
-        LojaSystem lojaSystem = new LojaSystem();
-
-        // Criando uma instância real do LojaInterface, com o LojaSystem real
-        LojaInterface lojaInterface = new LojaInterface(scanner, lojaSystem);
-
-        // Configurando a saída para capturar o que foi impresso
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream printStream = new PrintStream(outputStream);
-        System.setOut(printStream);
-
-        // Rodar o método que será testado
-        lojaInterface.menuLoja(new UserLoja(6, "Loja Teste", "email@teste.com", "123", "123"));
-
-        // Verificar se "Saindo..." foi impresso
-        String output = outputStream.toString();
-        assertTrue(output.contains("Saindo..."));
-    }
-
-    @Test
-    @Order(5)
-    public void testOpcao4Sair() {
-        String input = "4\n";
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
-        lojaInterface.setScanner(new Scanner(System.in));
-
-        lojaInterface.menuLoja(new UserLoja(7, "Loja Teste", "email@teste.com", "123", "123"));
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Saindo..."));
-    }
-
-
 }

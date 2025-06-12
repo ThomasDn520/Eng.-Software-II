@@ -19,6 +19,7 @@ import static Loja.LojaDAO.obterNotaEConceitoLoja;
 public class LojaInterface {
     private final InputStream entrada;
     private final PrintStream saida;
+    private Scanner scanner;
 
     // Modificado para aceitar um Scanner externo
     public LojaInterface() {
@@ -221,5 +222,9 @@ public class LojaInterface {
      */
     public void menuProdutos(UserLoja loja) {
         new ProdutoInterface(this.entrada, this.saida).menuProdutos(loja);
+    }
+
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
     }
 }
