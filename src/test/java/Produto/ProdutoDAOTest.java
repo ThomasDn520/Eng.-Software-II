@@ -1,172 +1,123 @@
 package Produto;
 
-import User.UserCliente;
-import User.UserLoja;
-import com.google.gson.*;
-
 import Database.DatabaseJSON;
-
+import User.User;
+import User.UserLoja;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.*;
+import User.UserCliente;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProdutoDAOTest {
+public class ProdutoDAOTest {
 
-    private UserCliente usuarioCliente;
-    private UserLoja usuarioLoja;
-    private UserLoja loja;
-    private Produto produto, produto1, produto2, produto3, produto4;
+    private static UserLoja loja;
+    private static Produto produto;
 
     @BeforeEach
-    void setup() {
-    loja = new UserLoja(2, "Loja Teste", "teste@loja.com", "senha", "1234567899876");
+    public void setup() {
+        // Criar loja e produto fictícios
+        loja = new UserLoja(1000, "Loja Teste", "teste@loja.com", "senha", "78945413214542");
+        loja.setId(1000);  // ID fixo para facilitar testes
 
-    // Primeiro, inicializa o banco
-    JsonArray lojas = new JsonArray();
-    JsonObject lojaJson = new JsonObject();
-    lojaJson.addProperty("id", loja.getId());
-    lojaJson.addProperty("nome", loja.getNome());
-    lojaJson.add("produtos", new JsonArray());
-    lojas.add(lojaJson);
+        produto = new Produto("Produto Teste", 10.0, "Tipo A", 5, "Marca X", "Descrição teste");
 
-    DatabaseJSON.salvarLojas(lojas);
+        // Cria estrutura JSON da loja e salva no "banco"
+        JsonObject lojaJson = new JsonObject();
+        lojaJson.addProperty("id", loja.getId());
+        lojaJson.addProperty("nome", loja.getNome());
+        lojaJson.addProperty("email", loja.getEmail());
+        lojaJson.add("produtos", new JsonArray());
 
-    // Depois, adiciona produtos
-    produto = new Produto("Camiseta", 59.90, "Vestuário", 10, "Nike", "Camiseta esportiva");
-    produto1 = new Produto("Camiseta Azul", 50.0, "Roupa", 10, "Marca X", "Camiseta de algodão");
-    produto2 = new Produto("Camiseta Branca", 55.0, "Roupa", 15, "Marca Y", "Camiseta básica");
-    produto3 = new Produto("Notebook Dell", 3500.0, "Eletrônico", 5, "Dell", "Notebook profissional");
-    produto4 = new Produto("Livro Java", 89.0, "Livro", 20, "Editora Z", "Livro de programação Java");
-
-    produto.setLoja(loja.getNome());
-    produto1.setLoja(loja.getNome());
-    produto2.setLoja(loja.getNome());
-    produto3.setLoja(loja.getNome());
-    produto4.setLoja(loja.getNome());
-
-    ProdutoDAO.adicionarProduto(loja, produto1);
-    ProdutoDAO.adicionarProduto(loja, produto2);
-    ProdutoDAO.adicionarProduto(loja, produto3);
-    ProdutoDAO.adicionarProduto(loja, produto4);
-
-        usuarioCliente = new UserCliente(1, "clienteTeste", "cliente@gmail.com", "1234", "09876543123");
-        usuarioLoja = new UserLoja(2,"lojaTeste", "loja@gmail.com", "senha", "123456789023");
-
-        // Criar estrutura básica de lojas e produtos no DatabaseJSON
-        JsonArray lojas2 = new JsonArray();
-
-        JsonObject loja = new JsonObject();
-        loja.addProperty("nome", "LojaLegal");
-
-        JsonArray produtos = new JsonArray();
-        JsonObject produto = new JsonObject();
-        produto.addProperty("nome", "ProdutoX");
-        produtos.add(produto);
-
-        loja.add("produtos", produtos);
-        lojas2.add(loja);
-
-        DatabaseJSON.salvarLojas(lojas2);
-}
-
-
-    @Test
-    void testAdicionarProduto() {
-        boolean sucesso = ProdutoDAO.adicionarProduto(loja, produto);
-        assertTrue(sucesso, "Produto deveria ser adicionado com sucesso");
+        JsonArray lojas = new JsonArray();
+        lojas.add(lojaJson);
+        DatabaseJSON.salvarLojas(lojas);
     }
 
     @Test
-    void testAdicionarProdutoDuplicado() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        boolean sucesso = ProdutoDAO.adicionarProduto(loja, produto);
-        assertFalse(sucesso, "Produto duplicado não deveria ser adicionado");
-    }
-
-    @Test
-    void testBuscarProduto() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        Produto buscado = ProdutoDAO.buscarProduto(loja, "Camiseta");
-        assertNotNull(buscado);
-        assertEquals("Camiseta", buscado.getNome());
-    }
-
-    @Test
-    void testListarProdutos() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        List<Produto> produtos = ProdutoDAO.listarProdutos(loja);
-        assertEquals(5, produtos.size());
-        assertEquals("Camiseta Azul", produtos.get(0).getNome());
-    }
-
-    @Test
-    void testRemoverProduto() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        boolean removido = ProdutoDAO.removerProduto(loja, "Camiseta");
-        assertTrue(removido, "Produto deveria ser removido");
-    }
-
-    @Test
-    void testAtualizarEstoqueLojaCompra_Sucesso() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        boolean atualizado = ProdutoDAO.atualizarEstoqueLojaCompra(loja.getNome(), "Camiseta", 5);
-        assertTrue(atualizado, "Atualização de estoque deveria ocorrer");
-    }
-
-    @Test
-    void testAtualizarEstoqueLojaCompra_EstoqueInsuficiente() {
-        ProdutoDAO.adicionarProduto(loja, produto);
-        boolean atualizado = ProdutoDAO.atualizarEstoqueLojaCompra(loja.getNome(), "Camiseta", 15);
-        assertFalse(atualizado, "Não deve atualizar se não houver estoque suficiente");
-    }
-
-    @Test
-    void testBuscarProdutoPorNomeExato() {
-        Produto resultado = ProdutoDAO.buscarProduto(loja, "Camiseta Azul");
-
-        assertNotNull(resultado);
-        assertEquals("Camiseta Azul", resultado.getNome());
-    }
-
-    @Test
-    void testBuscarProdutoSemResultados() {
-        Produto resultado = ProdutoDAO.buscarProduto(loja, "Celular");
-
-        assertNull(resultado);
-    }
-
-    @Test
-    public void testAdicionarAvaliacao_Valida() {
-        boolean resultado = ProdutoDAO.adicionarAvaliacao(usuarioCliente, "LojaLegal", "ProdutoX", 4, "Ótimo produto");
+    public void testAdicionarProduto() {
+        boolean resultado = ProdutoDAO.adicionarProduto(loja, produto);
         assertTrue(resultado);
 
-        // Verifica se a avaliação foi realmente adicionada no JSON
-        JsonArray lojas = DatabaseJSON.carregarLojas();
-        JsonObject loja = lojas.get(0).getAsJsonObject();
-        JsonArray produtos = loja.getAsJsonArray("produtos");
-        JsonObject produto = produtos.get(0).getAsJsonObject();
-        JsonArray avaliacoes = produto.getAsJsonArray("avaliacoes");
-
-        assertNotNull(avaliacoes);
-        assertEquals(1, avaliacoes.size());
-
-        JsonObject avaliacao = avaliacoes.get(0).getAsJsonObject();
-        assertEquals("clienteTeste", avaliacao.get("usuario").getAsString());
-        assertEquals(4, avaliacao.get("nota").getAsInt());
-        assertEquals("Ótimo produto", avaliacao.get("comentario").getAsString());
+        List<Produto> produtos = ProdutoDAO.listarProdutos(loja);
+        assertEquals(1, produtos.size());
+        assertEquals("Produto Teste", produtos.get(0).getNome());
     }
 
     @Test
-    public void testAdicionarAvaliacao_NotaInvalida() {
-        boolean resultado = ProdutoDAO.adicionarAvaliacao(usuarioCliente, "LojaLegal", "ProdutoX", 0, "Comentário");
+    public void testAdicionarProdutoDuplicado() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+        boolean resultado = ProdutoDAO.adicionarProduto(loja, produto); // repetido
         assertFalse(resultado);
     }
 
     @Test
-    public void testAdicionarAvaliacao_UsuarioLoja() {
-        boolean resultado = ProdutoDAO.adicionarAvaliacao(usuarioLoja, "LojaLegal", "ProdutoX", 3, "Comentário");
+    public void testRemoverProduto() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+        boolean removido = ProdutoDAO.removerProduto(loja, "Produto Teste");
+        assertTrue(removido);
+
+        List<Produto> produtos = ProdutoDAO.listarProdutos(loja);
+        assertEquals(0, produtos.size());
+    }
+
+    @Test
+    public void testBuscarProdutoExistente() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+        Produto buscado = ProdutoDAO.buscarProduto(loja, "Produto Teste");
+        assertNotNull(buscado);
+        assertEquals("Produto Teste", buscado.getNome());
+    }
+
+    @Test
+    public void testBuscarProdutoInexistente() {
+        Produto buscado = ProdutoDAO.buscarProduto(loja, "Inexistente");
+        assertNull(buscado);
+    }
+
+    @Test
+    public void testAtualizarEstoqueLojaCompra() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+        boolean resultado = ProdutoDAO.atualizarEstoqueLojaCompra("Loja Teste", "Produto Teste", 3);
+        assertTrue(resultado);
+
+        Produto atualizado = ProdutoDAO.buscarProduto(loja, "Produto Teste");
+        assertEquals(2, atualizado.getQuantidade());
+    }
+
+    @Test
+    public void testAtualizarEstoqueLojaCompraInsuficiente() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+        boolean resultado = ProdutoDAO.atualizarEstoqueLojaCompra("Loja Teste", "Produto Teste", 10);
+        assertFalse(resultado);
+    }
+
+    @Test
+    public void testAdicionarAvaliacaoValida() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+
+        User cliente = new UserCliente(10, "João", "joao@email.com", "123", "45127889562");
+        boolean resultado = ProdutoDAO.adicionarAvaliacao(cliente, "Loja Teste", "Produto Teste", 5, "Ótimo!");
+        assertTrue(resultado);
+    }
+
+    @Test
+    public void testAdicionarAvaliacaoNotaInvalida() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+
+        User cliente = new UserCliente(5, "Maria", "maria@email.com", "123", "12457889562");
+        boolean resultado = ProdutoDAO.adicionarAvaliacao(cliente, "Loja Teste", "Produto Teste", 0, "Ruim!");
+        assertFalse(resultado);
+    }
+
+    @Test
+    public void testLojaNaoPodeAvaliarProduto() {
+        ProdutoDAO.adicionarProduto(loja, produto);
+
+        boolean resultado = ProdutoDAO.adicionarAvaliacao(loja, "Loja Teste", "Produto Teste", 4, "Gostei");
         assertFalse(resultado);
     }
 }

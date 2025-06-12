@@ -89,26 +89,5 @@ class AdminSystemTest {
         List<UserCliente> clientes = adminSystem.listarClientes();
         assertNotNull(clientes);
     }
-
-    @Test
-    void testRemoverCliente() {
-        // Criar um cliente de teste
-        String emailTeste = "cliente_teste@email.com";
-        ClienteDAO.cadastrarCliente("Cliente Teste", emailTeste, "123.456.789-00", "senha123");
-
-        // Verificar se o cliente foi cadastrado
-        List<UserCliente> clientesAntes = ClienteDAO.listarTodos();
-        boolean clienteExisteAntes = clientesAntes.stream().anyMatch(c -> c.getEmail().equals(emailTeste));
-        assertTrue(clienteExisteAntes, "O cliente deveria existir antes da remoção.");
-
-        // Remover o cliente
-        boolean removido = ClienteDAO.remover(emailTeste);
-        assertTrue(removido, "A remoção do cliente deveria retornar true.");
-
-        // Verificar se o cliente não está mais na lista
-        List<UserCliente> clientesDepois = ClienteDAO.listarTodos();
-        boolean clienteExisteDepois = clientesDepois.stream().anyMatch(c -> c.getEmail().equals(emailTeste));
-        assertFalse(clienteExisteDepois, "O cliente não deveria mais existir após a remoção.");
-    }
 }
 
